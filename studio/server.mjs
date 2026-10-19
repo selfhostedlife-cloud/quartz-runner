@@ -155,6 +155,7 @@ const HELP_MAIN = [
   '/hook 17 - 5 plain-English hook options for post #17 (tap one to put it on the cover and caption)',
   '/fix 18 2 <what you want> - rewrite the TEXT of slide 2 of post #18, e.g. /fix 18 2 Mistake is shipping on 100% DP to a new buyer, Fix is taking part advance. (Swap img only changes the photo.)',
   '/fresh 17 - new plain hook AND new design for post #17 in one go',
+  '/edit 21 2 make the title yellow and bigger - colours, sizes, line gap, fonts, pills, photo, wording of one slide (or "all"); send /edit alone for examples',
   '/look 17 - change post #17 to the next design look; /look 17 red-news picks one; /looks lists them',
   '/ref - how to copy a competitor post',
   '',
@@ -165,7 +166,8 @@ const HELP_MAIN = [
 
 async function onLookCommand(text, reply) {
   const [, no, name] = text.split(/\s+/);
-  const post = byNo(no); if (!post) return reply('Usage: /look 17  or  /look 17 red-news  (see /looks)');
+  if (no && name && !LOOKS[name] && /^\d+$/.test(no) && byNo(no)) return onEditCommand('/edit ' + text.replace(/^\/look\s+/i, ''), reply); // free-form request typed after /look
+  const post = byNo(no); if (!post) return reply('Usage: /look 17  or  /look 17 red-news  (see /looks)\n\nTo change colours, sizes, fonts, pills or the photo of a slide use /edit - send /edit for examples.');
   if ((post.buffer || []).length) return reply('#' + post.no + ' is already in Buffer, so its slides cannot change here.');
   const cur = lookOf(post);
   const pick = name || pickLook([...state.posts.filter((p) => p.no !== post.no), { ...post, look: cur }]);
@@ -249,11 +251,73 @@ Return JSON: {"title":"","text":"","items":[],"teaser":""} (teaser max 6 words; 
 }
 async function onFixCommand(text, reply) {
   const m = text.match(/^\/fix\s+(\d+)\s+(\d+)\s+([\s\S]+)/); const post = m && byNo(m[1]);
-  if (!m || !post) return reply('Usage: /fix 18 2 what you want on that slide\nExample: /fix 18 2 Mistake: shipping on 100% DP to a new buyer. Fix: take part payment in advance.');
+  if (!m && /^\/fix\s+\d+\s+\D/i.test(text)) return onEditCommand('/edit ' + text.replace(/^\/fix\s+/i, ''), reply); // no slide number: treat as an edit of the whole post
+  if (!m || !post) return reply('For colours, sizes, gaps, fonts, pills or photos use /edit (send /edit for examples).\n\nUsage: /fix 18 2 what you want on that slide\nExample: /fix 18 2 Mistake: shipping on 100% DP to a new buyer. Fix: take part payment in advance.');
   if ((post.buffer || []).length) return reply('#' + post.no + ' is already in Buffer, so its slides cannot change here.');
   await reply('Rewriting slide ' + m[2] + ' of #' + post.no + '...');
   return fixSlide(post, Number(m[2]), m[3].trim()).catch((e) => reply('Could not rewrite: ' + e.message));
 }
+
+
+// /edit <post> [<slide>|all] <plain-English instruction>: colours, sizes, gaps, fonts, pills, photo and wording of a slide (owner request 2026-10-20: /look and /fix could not do this)
+const STYLE_KEYS = ['titleColor', 'bodyColor', 'accent', 'accent2', 'ink', 'tagText', 'pillColor', 'pillTextColor', 'titleSize', 'bodySize', 'lineGap', 'font', 'upper'];
+const EDIT_FONTS = ['Archivo Black', 'Inter', 'Bebas Neue', 'DM Serif Display', 'Anton', 'Rubik', 'Fraunces', 'Space Mono'];
+const isHex = (v) => /^#[0-9a-f]{3,8}$/i.test(String(v || ''));
+async function editSlides(post, scope, instruction) {
+  const specFile = path.join(post.dir, 'spec.json'); const spec = readJson(specFile, null);
+  if (!spec?.slides?.length) throw new Error('post #' + post.no + ' has no slides');
+  const idxs = scope === 'all' ? spec.slides.map((_, i) => i) : [Number(scope) - 1];
+  if (idxs.some((i) => !spec.slides[i])) throw new Error('post #' + post.no + ' has no slide ' + scope + ' (it has ' + spec.slides.length + ')');
+  const cur = spec.slides[idxs[0]];
+  const out = await gemini(`You turn an owner's plain-English request into a design change for ONE slide (or all slides) of an Instagram carousel (1080x1080, dark overlay on a photo, big headline, body text, a gold/coloured tag and highlight).
+OWNER'S REQUEST: ${instruction}
+SCOPE: ${scope === 'all' ? 'all slides' : 'slide ' + scope}
+CURRENT SLIDE: ${JSON.stringify({ title: cur.title, text: cur.text, items: cur.items, style: cur.style || {} })}
+Return JSON only, include ONLY what the owner asked for:
+{"style":{"titleColor":"#RRGGBB","bodyColor":"#RRGGBB","accent":"#RRGGBB (tag, highlights, bullets)","accent2":"#RRGGBB (purple highlight)","ink":"#RRGGBB (background overlay tint)","tagText":"#RRGGBB","pillColor":"#RRGGBB","pillTextColor":"#RRGGBB","titleSize":number px (default 56-96; bigger = 110+),"bodySize":number px (default 36; bigger = 44+),"lineGap":number px between text lines (default 14; more space = 30+),"font":one of ${JSON.stringify(EDIT_FONTS)},"upper":true|false for capital headlines},
+"pills":["exact words from the slide to show as a rounded button/pill"],
+"imageQuery":"2-4 English keywords for a NEW photo, only if the owner asked to change the picture",
+"title":"new headline (max 7 words), only if the owner asked to change wording","text":"new body, one point per line separated by \\n, only if the owner asked to change wording; plain easy English, no new facts",
+"reset":true if the owner wants to undo all custom styling of this slide,
+"summary":"one short sentence saying what you changed"}
+Convert colour names to hex. Relative requests ("bigger", "more space") are relative to the current style or the defaults above. If the request cannot be done with these fields, return {"summary":"", "cannot":"why"}.`);
+  if (!out || out.cannot) throw new Error(out?.cannot || 'no answer came back (Gemini quota?)');
+  const st = {};
+  for (const k of STYLE_KEYS) { const v = out.style?.[k]; if (v == null || v === '') continue;
+    if (/Color$|^accent|^ink$|tagText/.test(k)) { if (isHex(v)) st[k] = v; } else if (k === 'font') { if (EDIT_FONTS.includes(v)) st[k] = v; } else if (k === 'upper') st[k] = !!v; else if (Number.isFinite(Number(v))) st[k] = Number(v); }
+  const pills = scope === 'all' ? [] : (out.pills || []).map(String).filter(Boolean);
+  const newImg = scope === 'all' ? '' : String(out.imageQuery || '').trim();
+  const newText = scope === 'all' ? null : (out.title || out.text ? { title: out.title, text: out.text } : null);
+  if (!out.reset && !Object.keys(st).length && !pills.length && !newImg && !newText) throw new Error('I could not turn that into a change. Try e.g. /edit ' + post.no + ' 2 make the title yellow and bigger');
+  const size = (t) => { const len = String(t).length; return len > 70 ? 60 : len > 50 ? 70 : len > 32 ? 82 : 96; };
+  for (const fn of ['spec.json', 'spec.pre-look.json']) {
+    const file = path.join(post.dir, fn); const sp = readJson(file, null); if (!sp?.slides) continue;
+    for (const i of idxs) { const sl = sp.slides[i]; if (!sl) continue;
+      if (out.reset) delete sl.style;
+      if (Object.keys(st).length || pills.length) { sl.style = { ...(sl.style || {}), ...st }; if (pills.length) sl.style.pills = [...new Set([...(sl.style.pills || []), ...pills])]; }
+      if (newText?.title) sl.title = newText.title; if (newText?.text) sl.text = newText.text;
+      if (newText?.title && sl.layout) delete sl.size;
+      if (newImg) { sl.imageQueries = [newImg]; sl.imageQuery = newImg; delete sl.imageId; delete sl.imageSkip; }
+    }
+    fs.writeFileSync(file, JSON.stringify(sp, null, 2));
+  }
+  if (newImg) { const n = String(idxs[0] + 1).padStart(2, '0'); for (const x of ['img_' + n + '.jpg', 'img_' + n + '.jpg.nophoto']) try { fs.unlinkSync(path.join(post.dir, x)); } catch { /* none */ } }
+  const args = [specFile, post.dir]; if (scope !== 'all') args.push('--only', String(scope)); if (!newImg) args.push('--keep-photos');
+  const r = await run('../renderer/render.mjs', args, 8 * 60e3);
+  if (r.code !== 0) throw new Error(r.err.slice(-200));
+  if (scope === 'all') await sendPreview(post);
+  else await tg.sendPhoto(state.chatId, path.join(post.dir, 'slide_' + String(scope).padStart(2, '0') + '.jpg'), '#' + post.no + ' slide ' + scope + ': ' + (out.summary || 'changed'), { inline_keyboard: [[{ text: 'Approve', callback_data: 'a:' + post.no }]] });
+  return { no: post.no, scope, summary: out.summary, style: st, pills, imageQuery: newImg };
+}
+async function onEditCommand(text, reply) {
+  const m = text.match(/^\/edit\s+(\d+)\s+(?:(all|\d+)\s+)?([\s\S]+)/i); const post = m && byNo(m[1]);
+  if (!m || !post) return reply(EDIT_HELP);
+  if ((post.buffer || []).length) return reply('#' + post.no + ' is already in Buffer, so its slides cannot change here.');
+  const scope = (m[2] || 'all').toLowerCase();
+  await reply('Changing ' + (scope === 'all' ? 'all slides' : 'slide ' + scope) + ' of #' + post.no + ' (about a minute)...');
+  return editSlides(post, scope, m[3].trim()).catch((e) => reply('Could not edit: ' + e.message));
+}
+const EDIT_HELP = 'Design edits, in your own words:\n/edit <post> <slide> <what you want>\n/edit <post> all <what you want>  (every slide)\n\nExamples:\n/edit 21 2 make the title yellow and bigger, more gap between lines\n/edit 21 3 put the words 25 lakh in a pill button\n/edit 21 all use the Bebas Neue font, body text size 44\n/edit 21 4 change the photo to a container ship at a port\n/edit 21 2 reset (undo my styling)\n\nColours, text size, line gap, fonts, pills, photo and wording all work. /look 21 only changes the whole design preset; /fix 21 2 <text> only rewrites the words. Post number = the # in the preview, slide number = the slide in the album.';
 
 // ---------- handlers ----------
 async function onApprove(post, cb) {
@@ -325,6 +389,7 @@ async function onMessage(m, who = 'main') {
   if (who === 'main' && /https?:\/\/\S+/.test(text)) return onReferenceLink(text.match(/https?:\/\/\S+/)[0], reply);
   if (who === 'main' && (text === '/ref' || text === '/help')) return reply(HELP_MAIN);
   if (who === 'main' && /^\/looks\b/.test(text)) return reply('Design looks (each new post rotates to a look not used in the last 4 posts):\n' + Object.entries(LOOKS).map(([k, v]) => '- ' + k + ': ' + v.label).join('\n') + '\n\nChange one post: /look 17 (next look in the rotation) or /look 17 red-news');
+  if (who === 'main' && /^\/edit\b/.test(text)) return onEditCommand(text, reply);
   if (who === 'main' && /^\/fix\b/.test(text)) return onFixCommand(text, reply);
   if (who === 'main' && /^\/fresh\b/.test(text)) { const p = byNo(text.split(/\s+/)[1]); if (!p) return reply('Usage: /fresh 17 (new plain hook + new design for post #17)'); reply('Refreshing #' + p.no + ' (hook + design), about 2 minutes...'); return refreshPost(p).catch((e) => reply('Refresh failed: ' + e.message)); }
   if (who === 'main' && /^\/look\b/.test(text)) return onLookCommand(text, reply);
@@ -640,7 +705,7 @@ setInterval(goLiveWatcher, 5 * 60e3);
 setTimeout(() => { resetChecksOnStart(); goLiveWatcher(); }, 25e3);
 
 server.listen(PORT, '127.0.0.1', () => { log(`studio listening on http://127.0.0.1:${PORT}`); pollLoop('main'); pollLoop('test');
-  BOTS.main.setCommands([['status', 'Latest posts and go-live times'], ['results', 'Results chart for the main account'], ['run', 'Write new posts now'], ['learn', 'Re-read results, update the plan'], ['hook', 'Plain-English hooks: /hook 17'], ['fresh', 'New hook + design: /fresh 17'], ['fix', 'Rewrite a slide text: /fix 18 2 what you want'], ['look', 'Change design: /look 17'], ['looks', 'List the design looks'], ['ref', 'How to copy a competitor post'], ['help', 'All commands']].map(([command, description]) => ({ command, description }))).catch((e) => log('commands menu:', e.message));
+  BOTS.main.setCommands([['status', 'Latest posts and go-live times'], ['results', 'Results chart for the main account'], ['run', 'Write new posts now'], ['learn', 'Re-read results, update the plan'], ['hook', 'Plain-English hooks: /hook 17'], ['fresh', 'New hook + design: /fresh 17'], ['edit', 'Colours, sizes, pills, fonts, photo: /edit 21 2 ...'], ['fix', 'Rewrite a slide text: /fix 18 2 what you want'], ['look', 'Change design: /look 17'], ['looks', 'List the design looks'], ['ref', 'How to copy a competitor post'], ['help', 'All commands']].map(([command, description]) => ({ command, description }))).catch((e) => log('commands menu:', e.message));
   if (BOTS.test.hasToken()) BOTS.test.setCommands([{ command: 'status', description: 'Queue of this account' }, { command: 'results', description: 'Results chart' }]).catch(() => {});
 });
 }

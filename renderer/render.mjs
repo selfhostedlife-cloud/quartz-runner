@@ -100,11 +100,13 @@ const plainText = (t) => String(t ?? '').replace(/(==|\+\+|!!|\*\*)/g, '').repla
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 // Markup: **gold text**  ==yellow highlight==  ++purple highlight++  !!orange highlight!!   (\n = new line)
-const hl = (s) => esc(s)
+const hl = (s) => withPills(hlRaw(s));
+const hlRaw = (s) => esc(s)
   .replace(/\*\*(.+?)\*\*/g, '<em>$1</em>')
   .replace(/==(.+?)==/g, '<mark class="y">$1</mark>')
   .replace(/\+\+(.+?)\+\+/g, '<mark class="p">$1</mark>')
   .replace(/!!(.+?)!!/g, '<mark class="o">$1</mark>');
+const withPills = (html) => { let h = html; for (const p of (globalThis.PILLS || [])) { const e = esc(p).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); h = h.replace(new RegExp('(?![^<]*>)(' + e + ')', 'i'), '<span class="pillt">$1</span>'); } return h; };
 const para = (s) => String(s ?? '').split('\n').map((ln) => (ln.trim() === '' ? '<span class="gap"></span>' : `<span class="ln">${hl(ln)}</span>`)).join('');
 const dataUri = (f) => `data:image/${f.endsWith('.png') ? 'png' : 'jpeg'};base64,${fs.readFileSync(f).toString('base64')}`;
 
@@ -191,10 +193,14 @@ function slideHtml(s, i, total, handle, imgFile) {
   }
   const teaser = s.teaser ? `<div class="teaser"><span class="l">${hl(s.teaser)}</span><span class="arrow">&rarr;</span></div>`
     : (!last && s.type === 'cover' ? `<div class="teaser"><span class="l">Swipe &mdash; it gets worse</span><span class="arrow">&rarr;</span></div>` : '');
+  const S = { ...(globalThis.SPEC_STYLE || {}), ...(s.style || {}) };
+  const base = globalThis.PT || (S.ink || S.accent || S.accent2 || S.upper != null ? { ink: c.ink, accent: c.gold, accent2: '#F26A1B', tagText: '#0A0F1E' } : null);
+  const T = base && (S.ink || S.accent || S.accent2 || S.tagText || S.upper != null) ? { ...base, ...(S.ink ? { ink: S.ink } : {}), ...(S.accent ? { accent: S.accent } : {}), ...(S.accent2 ? { accent2: S.accent2 } : {}), ...(S.tagText ? { tagText: S.tagText } : {}), ...(S.upper != null ? { upper: !!S.upper } : {}) } : base;
   const tv = s.layout ? (s.themeVars || THEME_VARS[s.theme] || THEME_VARS.dark) : null;
-  const fontVar = s.font ? `--disp:'${s.font}';` : '';
-  const bodyCls = s.layout ? ` class="th" style="${fontVar}--bg:${tv.bg};--fg:${tv.fg};--ac:${tv.ac};--on:${tv.on};--mu:${tv.mu};--ac2:${tv.ac2};--pill:${tv.pill}"` : (fontVar ? ` style="${fontVar}"` : '');
-  const T = globalThis.PT; const rgb = (h) => { const n = parseInt(h.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255].join(','); };
+  const fontVar = (S.font || s.font) ? `--disp:'${S.font || s.font}';` : '';
+  const bodyCls = s.layout ? ` class="th" style="${fontVar}--bg:${S.ink || tv.bg};--fg:${tv.fg};--ac:${S.accent || tv.ac};--on:${S.tagText || tv.on};--mu:${tv.mu};--ac2:${S.accent2 || tv.ac2};--pill:${S.accent2 || tv.pill}"` : (fontVar ? ` style="${fontVar}"` : '');
+  const T0 = null;
+  const rgb = (h) => { const n = parseInt(h.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255].join(','); };
   const ptCss = T && !s.layout ? `
 body{background:${T.ink}}
 .photo:after{background:linear-gradient(to bottom,rgba(${rgb(T.ink)},0) 45%,${T.ink} 100%)}
@@ -208,13 +214,25 @@ mark.p{background:${T.accent2 || '#7C3AED'};color:#fff}
 .pill{background:${T.accent2 || '#F26A1B'}}
 .big{font-family:var(--disp,'Archivo Black')}
 ${T.upper ? 'h1,h2{text-transform:uppercase;letter-spacing:.005em}' : ''}` : '';
-  return `<!doctype html><html><head><meta charset="utf-8"><style>${css}${layoutCss}${ptCss}</style></head><body${bodyCls}>${inner}${teaser}</body></html>`;
+  const px = (v, lo, hi) => { const n = Number(v); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, Math.round(n))) : null; };
+  const ts = px(S.titleSize, 30, 160), bs = px(S.bodySize, 22, 70), lg = px(S.lineGap, 0, 80);
+  const col = (v) => (/^#[0-9a-f]{3,8}$/i.test(v || '') ? v : null);
+  const userCss = [
+    col(S.titleColor) ? `h1,h2,.big,.th h1,.th h2{color:${col(S.titleColor)}!important}` : '',
+    col(S.bodyColor) ? `p,li,.ln,.small,.th p,.th li{color:${col(S.bodyColor)}!important;opacity:1!important}` : '',
+    ts ? `h1,h2{font-size:${ts}px!important}` : '',
+    bs ? `p,li,.ln,.small{font-size:${bs}px!important}` : '',
+    lg != null ? `.ln{margin-top:${lg}px!important}.gap{height:${lg + 6}px!important}li{margin-top:0}ul{gap:${lg + 6}px!important}p{line-height:${(1.2 + lg / 60).toFixed(2)}!important}` : '',
+    `.pillt{display:inline-block;background:${col(S.pillColor) || (T && T.accent2) || '#F26A1B'};color:${col(S.pillTextColor) || '#fff'};font-weight:800;padding:.04em .45em;border-radius:.45em;line-height:1.3;-webkit-box-decoration-break:clone;box-decoration-break:clone}`,
+  ].join('');
+  return `<!doctype html><html><head><meta charset="utf-8"><style>${css}${layoutCss}${ptCss}${userCss}</style></head><body${bodyCls}>${inner}${teaser}</body></html>`;
 }
 
 const [specPath, outDir] = process.argv.slice(2);
 if (!specPath || !outDir) { console.error('usage: node render.mjs <spec.json> <outDir>'); process.exit(1); }
 const spec = JSON.parse(fs.readFileSync(specPath, 'utf8'));
 globalThis.SPEC_DIR = path.dirname(path.resolve(specPath));
+globalThis.SPEC_STYLE = spec.style || null;
 globalThis.PT = spec.photoTheme || null; // { ink:'#RRGGBB', accent, accent2, tagText, font, upper }
 fs.mkdirSync(outDir, { recursive: true });
 const handle = brand.handle; // one handle on every slide, for both accounts (owner rule 2026-10-13): never the per-spec value
@@ -230,6 +248,7 @@ const onlyArg = process.argv.indexOf('--only'); const only = onlyArg > 0 ? Numbe
 for (let i = 0; i < spec.slides.length; i++) {
   if (only >= 0 && i !== only) { files.push(path.join(outDir, `slide_${String(i + 1).padStart(2, '0')}.jpg`)); continue; }
   const s = spec.slides[i]; if (spec.font && !s.font) s.font = spec.font;
+  globalThis.PILLS = [...(spec.style?.pills || []), ...(s.style?.pills || [])];
   let imgFile = null;
   const q = s.imageQueries || s.imageQuery || s.imagePrompt; const fileN = path.join(outDir, `img_${String(i + 1).padStart(2, '0')}.jpg`);
   const wantsPhoto = s.photo !== false && !s.layout;
@@ -246,7 +265,7 @@ for (let i = 0; i < spec.slides.length; i++) {
   await page.evaluate(() => { /* autoFit */
     for (const w of document.querySelectorAll('.wrap')) {
       if (getComputedStyle(w).bottom === 'auto') continue;
-      const grow = (sel, min, step) => { for (const el of w.querySelectorAll(sel)) { const fs0 = parseFloat(getComputedStyle(el).fontSize); if (fs0 > min) el.style.fontSize = Math.max(min, fs0 * step) + 'px'; } };
+      const grow = (sel, min, step) => { for (const el of w.querySelectorAll(sel)) { const fs0 = parseFloat(getComputedStyle(el).fontSize); if (fs0 > min) el.style.setProperty('font-size', Math.max(min, fs0 * step) + 'px', 'important'); } };
       for (let it = 0; it < 30 && w.scrollHeight > w.clientHeight + 2; it++) {
         // phase 1: shrink the big number and headings first (keep body text readable); phase 2: body text, never below 30px
         if (it < 14) { grow('.big', 100, 0.94); grow('h1,h2', 44, 0.95); } else { grow('p,li,.ln,.small', 30, 0.96); grow('h1,h2', 36, 0.95); }
