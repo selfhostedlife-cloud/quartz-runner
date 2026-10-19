@@ -629,7 +629,8 @@ function catchUpDaily() {
   const t = istNow(); const past = t.getUTCHours() > DAILY_AT.h || (t.getUTCHours() === DAILY_AT.h && t.getUTCMinutes() >= DAILY_AT.m + (TICK ? 0 : 5));
   if (!past || t.getUTCHours() >= 23 || ranToday() || running || !state.chats?.main) return;
   log('daily run catch-up (it did not run at 11:30 IST today)');
-  dailyRun().catch((e) => log('daily run error:', e.message));
+  // bg(): in the cloud tick the process must wait for the run, else exit(0) kills it mid-render (drafts were lost 13-19 Oct)
+  bg(dailyRun().catch((e) => { log('daily run error:', e.message); if (state.lastDailyRunDate === istDate() && !state.posts.some((p) => p.createdAt && p.createdAt.slice(0, 10) === new Date().toISOString().slice(0, 10))) { state.lastDailyRunDate = null; save(); } }));
 }
 if (!TICK) {
 setInterval(catchUpDaily, 15 * 60e3);
