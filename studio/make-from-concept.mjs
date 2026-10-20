@@ -1,6 +1,7 @@
 // Full pipeline for a planned concept: Copywriter -> Critic/reviser -> Fact-check (if search quota allows) -> Pixabay slides -> lead-magnet PDF.
 // Usage: node make-from-concept.mjs <conceptNo> --hook "<hook>" --sub "<sub>"
 import fs from 'node:fs';
+import { addFixedLines, stripFixedLines } from './caption.mjs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -57,7 +58,7 @@ QUALITY BAR - every rule is mandatory:
 5. Titles <= 8 words (big, plain words). Every content slide has a DESCRIPTION under the title: one or two COMPLETE plain sentences (14-30 words in total) that explain the point and why it matters to the reader. Never a 2-3 word fragment. No filler. Each content slide ends with a teaser (<=7 words) that pulls to the next slide.
 6. BANNED words/phrases: ${BANNED}.
 7. CTA slide: title "Get the <Offer Name>", button "Comment  ${concept.offer.keyword}", text = "Inside: " + exactly 3 concrete things in the PDF + ". Follow so the DM reaches you." (max 28 words).
-8. Caption (plain text, no asterisks): line 1 = the hook; then 2-3 short value lines; then "Comment ${concept.offer.keyword} and I'll DM you the <offer name>. Follow so the DM reaches you."; max 800 chars. hashtags: EXACTLY 5 relevant (Instagram allows max 5), no brand/person names.
+8. Caption (plain text, no asterisks): line 1 = the hook; then a DESCRIPTIVE body of 110-170 words in 3-4 short paragraphs (what the situation is, why it costs money or time, 3-4 concrete points taken from the slides, and the practical takeaway; plain easy English, no filler); then ONE CTA line: "Comment ${concept.offer.keyword} and I'll DM you the <offer name>. Follow so the DM reaches you."; max 1400 chars. Do NOT write the consultancy/Impexq lines (they are added automatically). hashtags: EXACTLY 5 relevant (Instagram allows max 5), no brand/person names.
 9. NEVER invent statistics ("3x higher", "typically", percentages) - use a labelled illustrative example or leave the number out.
 10. If a slide promises named items (platforms, clauses, documents) it must NAME them on the slide itself.
 11. Never state what a law or regulation REQUIRES unless you are certain; say "many buyers ask for ..." and "check <official source>".
@@ -156,4 +157,5 @@ try {
   rv.claims = post.claims; rv.promise = promise; rv.factcheck = { ok: fc.ok, unverified: !!fc.unverified, issues: fc.issues }; rv.raw_factcheck = fc.raw;
   fs.writeFileSync(rf, JSON.stringify(rv, null, 2));
 }
+{ const cf = path.join(outDir, 'caption.txt'); fs.writeFileSync(cf, addFixedLines(fs.readFileSync(cf, 'utf8'))); } // consultancy + Impexq lines before the hashtags (final step, after any restyle)
 console.log(JSON.stringify({ id, outDir, template: TEMPLATE, keyword: concept.offer.keyword, scores: review.scores, promise_gaps: promise.gaps || [], factcheck_unverified: !!fc.unverified, pdf }, null, 1));

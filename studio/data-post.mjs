@@ -1,6 +1,7 @@
 // Data-based carousel (10 slides) built ONLY from the Comtrade snapshot in data/comtrade-top.json - no AI-written facts.
 // Usage: node data-post.mjs <hsCode>   -> prints JSON {id, outDir, keyword, pdf, topic, hook}
 import fs from 'node:fs';
+import { addFixedLines, stripFixedLines } from './caption.mjs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -76,7 +77,7 @@ const lm = {
   closing: 'Source: UN Comtrade, imports reported by each country with partner India. Not legal or customs advice. Follow @faizanali.shahji for daily export tips.',
 };
 fs.writeFileSync(path.join(outDir, 'spec.json'), JSON.stringify({ handle: '@faizanali.shahji', slides }, null, 2));
-fs.writeFileSync(path.join(outDir, 'caption.txt'), caption);
+fs.writeFileSync(path.join(outDir, 'caption.txt'), addFixedLines(caption));
 fs.writeFileSync(path.join(outDir, 'leadmagnet.json'), JSON.stringify(lm, null, 2));
 const pdf = path.join(outDir, `${p.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-buyer-map.pdf`);
 await renderLeadMagnet(lm, pdf, path.join(outDir, 'pdf_preview.png'));

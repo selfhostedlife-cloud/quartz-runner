@@ -9,6 +9,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { predict } from './features.mjs';
+import { stripFixedLines } from './caption.mjs';
 
 // Learning loop: a post is only put into Buffer when its slot is at most LOOKAHEAD_H hours away, so the choice (which approved post goes next)
 // always uses the newest results; the bank is ranked by the learned model, not first-in-first-out.
@@ -120,7 +121,7 @@ async function feedFacebook(post, urls, mainDue, notifyFb) {
   if (post.fb?.bufferId) return;
   let text = '';
   try { text = fs.readFileSync(path.join(post.dir, 'caption_fb.txt'), 'utf8').trim(); } catch { /* fall back below */ }
-  if (!text) text = fs.readFileSync(path.join(post.dir, 'caption.txt'), 'utf8').replace(/(\s*#\w+)+\s*$/, '').trim();
+  if (!text) text = stripFixedLines(fs.readFileSync(path.join(post.dir, 'caption.txt'), 'utf8')).replace(/(\s*#\w+)+\s*$/, '').trim(); // the BIO/Impexq lines are Instagram-only
   const due = new Date(Math.max(new Date(mainDue).getTime() + 60 * 60e3, Date.now() + 15 * 60e3));
   const mut = `mutation($i: CreatePostInput!){ createPost(input:$i){ __typename ... on PostActionSuccess { post { id dueAt } } ... on InvalidInputError { message } ... on UnexpectedError { message } ... on LimitReachedError { message } } }`;
   const res = (await gql(mut, { i: { channelId: FB_CHANNEL, text, assets: urls.map((u) => ({ image: { url: u } })), mode: 'customScheduled', dueAt: due.toISOString(), schedulingType: 'automatic', saveToDraft: false, needsApproval: false, source: 'n8n-studio', metadata: { facebook: { type: 'post' } } } })).data?.createPost;

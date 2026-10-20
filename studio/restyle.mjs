@@ -4,6 +4,7 @@ const ROOT = process.env.IG_ROOT || 'C:/Users/smfab/ig-automation';
 // Always starts from the ORIGINAL post (spec.v1.json / caption.v1.txt) so it can be re-run safely.
 // Usage: node restyle.mjs <postDir> [--hook "<cover hook to keep>"] [--sub "<cover sub to keep>"]
 import fs from 'node:fs';
+import { addFixedLines, stripFixedLines } from './caption.mjs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { gemini, PHOTO_VOCAB } from './agents.mjs';
@@ -20,7 +21,7 @@ const log = (...a) => console.error('[restyle]', ...a);
 // source = original (v1) version
 if (!fs.existsSync(path.join(dir, 'spec.v1.json'))) { fs.copyFileSync(path.join(dir, 'spec.json'), path.join(dir, 'spec.v1.json')); fs.copyFileSync(path.join(dir, 'caption.txt'), path.join(dir, 'caption.v1.txt')); }
 const spec = rd('spec.v1.json');
-const caption = fs.readFileSync(path.join(dir, 'caption.v1.txt'), 'utf8').trim();
+const caption = stripFixedLines(fs.readFileSync(path.join(dir, 'caption.v1.txt'), 'utf8'));
 const lm = rd('leadmagnet.json');
 const pdf = fs.readdirSync(dir).find((f) => f.endsWith('.pdf'));
 
@@ -46,7 +47,7 @@ HARD RULES:
 6. Never ADD a Mistake/Fix slide (the owner allows that format only once a week and the writer already decided). If the original slide already has a mistake and a fix, format its text exactly as: "!!Mistake:!!\\n<one line>\\n\\n++Fix:++\\n<one or two lines>".
 7. Keep the same number of slides and slide types. Teasers max 6 words, simple. The last slide stays type "cta": title "Get the ++<guide name>++" (max 5 words, must fit on two lines) where the guide name is a short form of the PDF title "${lm.title}", button "Comment ${KEYWORD}", text "Inside:\\n<item 1>\\n<item 2>\\n<item 3>" (3 short items, NO highlight markup in this text, that match the PDF sections: ${JSON.stringify((lm.sections || []).map((s) => s.heading))}).
 8. imageQueries: for every slide give 2 options chosen verbatim from: ${PHOTO_VOCAB.join(' | ')} . Pick scenes that fit the slide.
-9. CAPTION: easy English. Line 1 = the cover hook as plain text. Then 2-3 short lines using only facts from the original. Then: "Comment ${KEYWORD} and I'll DM you the <guide name>. Follow so the DM reaches you." Then a blank line and EXACTLY 5 hashtags. Plain text, no asterisks, no emoji.
+9. CAPTION: easy English. Line 1 = the cover hook as plain text. Then a DESCRIPTIVE body of 110-170 words in 3-4 short paragraphs using only facts from the original (keep its detail; do not shrink it). Then: "Comment ${KEYWORD} and I'll DM you the <guide name>. Follow so the DM reaches you." Then a blank line and EXACTLY 5 hashtags. Plain text, no asterisks, no emoji.
 Return JSON: {"slides":[{"type":"","kicker":"","title":"","sub":"","text":"","items":[],"stat":"","teaser":"","button":"","imageQueries":["",""]}],"caption":"..."} (omit fields a slide does not use).
 
 ORIGINAL SLIDES: ${JSON.stringify(spec.slides)}
@@ -101,7 +102,7 @@ out.slides.forEach((s, i) => {
 const lines = out.caption.replace(/[*_`]/g, '').trim().split('\n');
 lines[0] = plain(out.slides[0].title);
 fs.writeFileSync(path.join(dir, 'spec.json'), JSON.stringify({ handle: spec.handle || '@faizanali.shahji', slides: out.slides }, null, 2));
-fs.writeFileSync(path.join(dir, 'caption.txt'), lines.join('\n'));
+fs.writeFileSync(path.join(dir, 'caption.txt'), addFixedLines(lines.join('\n')));
 for (const f of fs.readdirSync(dir)) if (/^img_\d+\.jpg(\.credit\.json)?$|^slide_\d+\.jpg$/.test(f)) fs.rmSync(path.join(dir, f));
 
 const r = spawnSync(process.execPath, [(ROOT + '/renderer/render.mjs'), path.join(dir, 'spec.json'), dir], { encoding: 'utf8' });

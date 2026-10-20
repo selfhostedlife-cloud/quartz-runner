@@ -1,6 +1,7 @@
 // Runs the full content chain for one post: plan -> write -> fact-check -> render slides -> lead magnet PDF.
 // Usage: node make-post.mjs [--topic "..."]   (no topic = Strategist picks 1)
 import fs from 'node:fs';
+import { addFixedLines, stripFixedLines } from './caption.mjs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -37,7 +38,7 @@ const id = new Date().toISOString().slice(0, 10) + '-' + slugify(plan.topic);
 const outDir = path.join(root, 'out', 'posts', id);
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(path.join(outDir, 'spec.json'), JSON.stringify({ handle: '@faizanali.shahji', slides: post.slides }, null, 2));
-fs.writeFileSync(path.join(outDir, 'caption.txt'), post.caption + '\n\n' + (post.hashtags || []).join(' '));
+fs.writeFileSync(path.join(outDir, 'caption.txt'), addFixedLines(post.caption + '\n\n' + (post.hashtags || []).join(' ')));
 fs.writeFileSync(path.join(outDir, 'factcheck.txt'), fc.raw || '');
 
 log('Designer (images + slides)...', post.slides.length, 'slides');
