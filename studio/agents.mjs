@@ -41,13 +41,15 @@ export async function gemini(prompt, { json = true, search = false, system, imag
     ...(search ? { tools: [{ google_search: {} }] } : {}),
   };
   const state = loadState();
-  const tag = (m) => m + (search ? ':search' : '');
+  // Two keys from two Google projects = two free quotas: key 2 is only used once every model of key 1 is out of quota (cooldowns are tracked per key)
+  const keys = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2].filter(Boolean);
   let sawQuota = false;
-  for (const model of MODELS) {
+  for (const [ki, apiKey] of keys.entries()) for (const model of MODELS) {
+    const tag = (m) => m + (search ? ':search' : '') + (ki ? '#k' + (ki + 1) : '');
     if (state[tag(model)] && state[tag(model)] > Date.now()) { sawQuota = true; continue; }
     for (let a = 0; a < 3; a++) {
       const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
-        method: 'POST', headers: { 'x-goog-api-key': process.env.GEMINI_API_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+        method: 'POST', headers: { 'x-goog-api-key': apiKey, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
       });
       if (r.status === 404 || r.status === 400) { const t = (await r.text()).slice(0, 160); console.error(`[studio] ${model}: HTTP ${r.status} ${t}`); state[tag(model)] = Date.now() + 6 * 3600e3; saveState(state); break; }
       if (r.status === 429) {

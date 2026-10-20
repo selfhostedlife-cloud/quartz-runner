@@ -41,6 +41,7 @@ jobs:
           DATA_DEPLOY_KEY: ${{ secrets.DATA_DEPLOY_KEY }}
           MEDIA_DEPLOY_KEY: ${{ secrets.MEDIA_DEPLOY_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_BOT_TOKEN_TEST: ${{ secrets.TELEGRAM_BOT_TOKEN_TEST }}
           TELEGRAM_BOT_TOKEN_FB: ${{ secrets.TELEGRAM_BOT_TOKEN_FB }}
@@ -62,6 +63,7 @@ jobs:
           git clone --depth 1 git@gh-media:selfhostedlife-cloud/ig-media.git "$RUNNER_TEMP/ig-media-work/ig-media"
           {
             echo "GEMINI_API_KEY=$GEMINI_API_KEY"
+            if [ -n "${GEMINI_API_KEY_2:-}" ]; then echo "GEMINI_API_KEY_2=$GEMINI_API_KEY_2"; fi
             echo "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN"
             echo "TELEGRAM_BOT_TOKEN_TEST=$TELEGRAM_BOT_TOKEN_TEST"
             echo "TELEGRAM_BOT_TOKEN_FB=$TELEGRAM_BOT_TOKEN_FB"
