@@ -3,7 +3,7 @@ const ROOT = process.env.IG_ROOT || 'C:/Users/smfab/ig-automation';
 import fs from 'node:fs';
 import { gemini } from './agents.mjs';
 import { PLAIN_RULES, plainCheck } from './plain.mjs';
-import { directivesBlock } from './rules.mjs';
+import { winningBlock } from './winning.mjs';
 
 const data = JSON.parse(fs.readFileSync((ROOT + '/studio/data/concepts-latest.json'), 'utf8'));
 const playbook = JSON.parse(fs.readFileSync((ROOT + '/studio/data/playbook.json'), 'utf8'));
@@ -11,9 +11,10 @@ let live = null; try { live = JSON.parse(fs.readFileSync((ROOT + '/studio/data/p
 const picks = process.argv.slice(2).map(Number).filter(Boolean);
 const chosen = picks.map((n) => ({ n, c: data.concepts[n - 1] }));
 
-const prompt = `${directivesBlock()}
+const prompt = `${winningBlock()}
 You write cover-slide hooks for @faizanali.shahji (Indian import-export education; audience = first-time/small Indian exporters).
-Real hooks that worked for this account: "Container Value Rs 32 Lacs, Profit Rs 9 Lacs - Really?" (55K views), "Onion export is always a very risky commodity" (35K), "How to Find Buyers in Europe?" (10K), "Comment 'Scrap' and I'll send you the complete guide of importing Aluminium Scrap".
+The owner's biggest winners (study their shape): "How to Import Copper Scrap in India" (80 lakh+ views, 300+ followers), "Rs 1 lakh export order? Here is how much you actually make" (15K+ twice), "Loss of Rs 2,64,800 per onion container: is the trade dead?" (14K, 365 comments). Prefer hooks of exactly these shapes: how-to for ONE named commodity, a Rs amount + a myth-bust, or a loss number + a verdict question.
+Other real hooks that worked for this account: "Container Value Rs 32 Lacs, Profit Rs 9 Lacs - Really?" (55K views), "Onion export is always a very risky commodity" (35K), "How to Find Buyers in Europe?" (10K), "Comment 'Scrap' and I'll send you the complete guide of importing Aluminium Scrap".
 Playbook: ${JSON.stringify(playbook.rules)}
 ${live ? 'LIVE LEARNINGS from our measured results (goal: 50K views in 24h; these beat the playbook if they disagree): ' + JSON.stringify({ hook_rules: live.hook_rules, double_down: live.double_down, stop: live.stop }) : ''}
 

@@ -3,7 +3,7 @@ const ROOT = process.env.IG_ROOT || 'C:/Users/smfab/ig-automation';
 // Usage: node concepts.mjs [count=4]
 import fs from 'node:fs';
 import { gemini } from './agents.mjs';
-import { directivesBlock } from './rules.mjs';
+import { winningBlock } from './winning.mjs';
 
 const playbook = JSON.parse(fs.readFileSync((ROOT + '/studio/data/playbook.json'), 'utf8'));
 const count = Number(process.argv[2] || 4);
@@ -31,7 +31,8 @@ brief = await gemini(`Today is ${new Date().toISOString().slice(0, 10)}. For Ind
 }
 console.error('[strategist] brief ready (' + brief.length + ' chars)');
 
-const prompt = `${directivesBlock()}
+const prompt = `${winningBlock()}
+EVERY concept must follow the winning formula above: set "format" to exactly one of guide | math | verdict (guide = end-to-end how-to for ONE named commodity; math = Rs cost/profit breakdown with a running balance; verdict = a loss number and a verdict). Reject definitions, scheme lists, acronym lists and generic tips.
 OWNER RULE: do not plan a "mistake vs fix" slide in any slide_outline (that format is limited to one post a week and is decided later by the writer).
 You are the Strategist for the Instagram account @faizanali.shahji (India import-export education, audience: first-time and small Indian exporters/importers, many asking "how do I find genuine buyers" and "will I get paid").
 REAL DATA about what works on this account:

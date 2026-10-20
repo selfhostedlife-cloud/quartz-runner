@@ -43,6 +43,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_BOT_TOKEN_TEST: ${{ secrets.TELEGRAM_BOT_TOKEN_TEST }}
+          TELEGRAM_BOT_TOKEN_FB: ${{ secrets.TELEGRAM_BOT_TOKEN_FB }}
           BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
         run: |
           set -euo pipefail
@@ -63,6 +64,7 @@ jobs:
             echo "GEMINI_API_KEY=$GEMINI_API_KEY"
             echo "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN"
             echo "TELEGRAM_BOT_TOKEN_TEST=$TELEGRAM_BOT_TOKEN_TEST"
+            echo "TELEGRAM_BOT_TOKEN_FB=$TELEGRAM_BOT_TOKEN_FB"
             echo "BUFFER_API_KEY=$BUFFER_API_KEY"
           } > .env
           (cd renderer && npm ci --no-audit --no-fund)

@@ -6,7 +6,8 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { gemini, factCheck, slugify, RULES, SLIDE_SCHEMA, PHOTO_VOCAB } from './agents.mjs';
 import { renderLeadMagnet } from './leadmagnet.mjs';
-import { mistakeFixAllowed, MF_RULE_ON, MF_RULE_OFF, directivesBlock } from './rules.mjs';
+import { mistakeFixAllowed, MF_RULE_ON, MF_RULE_OFF } from './rules.mjs';
+import { winningBlock, chooseTemplate, TEMPLATES, FB_RULES } from './winning.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, '..');
@@ -22,7 +23,15 @@ let live = null; try { live = JSON.parse(fs.readFileSync(path.join(here, 'data',
 const hook = arg('--hook'), sub = arg('--sub');
 const log = (...a) => console.error('[studio]', ...a);
 const MF_ON = mistakeFixAllowed(); log('Mistake/Fix slide allowed this week:', MF_ON);
-const OWNER_RULES = directivesBlock();
+// the owner's winning formula + template (winner.mjs): reference posts keep their own look, everything else follows the formula
+const TEMPLATE = style ? null : (arg('--template') || (TEMPLATES[concept.format] ? concept.format : chooseTemplate(concept)));
+log('slide template:', TEMPLATE || 'none (reference look)');
+const TEMPLATE_FORMAT = {
+  guide: 'TEMPLATE FORMAT "guide" (overrides rule 5 wording): slide 1 = cover. Content slides: type "point", title = a QUESTION of max 6 words ("Where to source from?", "Whom to sell to in India?", "How much does a container cost?"), items = 2 or 3 strings, each "Short label: specific fact" (max 22 words each; name real countries, buyer segments or companies, Rs amounts, documents). Exactly one slide of type "list" for the mandatory documents/checklist (title is a question, items = 5-8 short names). imageQueries: the FIRST query on EVERY slide is the exact commodity/product in 1-3 plain English words (e.g. "copper scrap", "turmeric", "rice bags") so the photo shows the real thing, the other two from the allowed list. Last slide = cta.',
+  math: 'TEMPLATE FORMAT "math" (overrides rule 5 wording): slide 1 = cover (the Rs amount in the title, sub = a "Spoiler:" line). Then one slide per cost, type "stat": title "N. Cost name" (max 5 words), text = 2-3 short lines (max 9 words each) with the Rs amount of THIS cost, stat = the running balance sentence exactly like "₹1,00,000 − ₹60,000 = ₹40,000 LEFT", teaser "And we are still NOT done." (not on the last cost slide). Then one slide of type "list": title "So where did your ₹X go?", items "Label: ₹amount" (6-9 rows), stat "ACTUAL PROFIT = ₹Y". Put the line "Illustrative example: actual numbers depend on product, quantity, destination and Incoterm." as text on the list slide. Then cta. All arithmetic must be exactly right. First imageQueries entry may be a free-text real scene (warehouse, port, documents on desk, the product).',
+  verdict: 'TEMPLATE FORMAT "verdict" (overrides rule 5 wording): slide 1 = cover whose title has the loss amount ("Loss of ₹2,64,800 per onion container. Is the trade dead?"), sub = the verdict in 2-4 words ("Verdict: unprofitable"), items = exactly 2 strings "Landed cost|AED 2.35/kg" and "Sale price|AED 1.9/kg" (label|value). Then calculation slides in the "math" format (type "stat", running balance in stat), one list slide with the cost table, final comparison, cta. Arithmetic must be exactly right and every number labelled illustrative. First imageQueries entry = the exact commodity in 1-3 plain words.',
+}[TEMPLATE] || '';
+const OWNER_RULES = [winningBlock(), TEMPLATE ? 'TEMPLATE: ' + TEMPLATES[TEMPLATE] + '\n' + TEMPLATE_FORMAT : ''].filter(Boolean).join('\n\n');
 
 const BANNED = 'unlock, secret, ultimate, master, game-changer, shocking, hack, revolutionary, "in today\'s world", "it is important to", "many exporters", "most exporters", "countless", "significant"';
 
@@ -64,7 +73,7 @@ let draft = await gemini(copyPrompt);
 
 log('Critic + reviser...');
 const reviewPrompt = `You are a ruthless editor for an Instagram carousel about Indian import-export. Score the DRAFT 1-5 on: hook_strength, pain_relevance, specificity (named docs/clauses/numbers, not vague), story_pull (each slide earns the next swipe), offer_fit (offer solves the pain; CTA lists 3 concrete contents), accuracy_risk (5 = nothing doubtful; 1 = invented or doubtful facts stated as fact).
-Then output a FINAL version that fixes every score below 4: replace vague lines with concrete ones, remove any claim you are not certain is true (rephrase as "check the current rule at <source>"), keep the cover hook and sub EXACTLY, keep every slide description as 1-2 complete descriptive sentences (never shorten it to a few words), ${MF_ON ? '' : 'remove any Mistake/Fix or wrong-vs-right slide (not allowed this week), '}keep imageQueries chosen verbatim from: ${PHOTO_VOCAB.join(' | ')}.
+Then output a FINAL version that fixes every score below 4: replace vague lines with concrete ones, remove any claim you are not certain is true (rephrase as "check the current rule at <source>"), keep the cover hook and sub EXACTLY, ${TEMPLATE ? 'keep the ' + TEMPLATE + ' template format exactly (' + (TEMPLATE === 'guide' ? 'question titles, labelled items' : 'running balance in stat, label: value rows') + '), ' : 'keep every slide description as 1-2 complete descriptive sentences (never shorten it to a few words), '} ${MF_ON ? '' : 'remove any Mistake/Fix or wrong-vs-right slide (not allowed this week), '}keep imageQueries chosen verbatim from: ${PHOTO_VOCAB.join(' | ')}.
 BANNED: ${BANNED}.
 Concept pain: ${concept.pain_point}. Offer: ${JSON.stringify(concept.offer)}.
 DRAFT: ${JSON.stringify(draft)}
@@ -75,11 +84,13 @@ const post = review.final?.slides?.length ? review.final : draft;
 post.caption = String(post.caption || '').replace(/[*_`]/g, '').trim();
 post.hashtags = (post.hashtags || []).filter((h) => !/faizan/i.test(h));
 // enforce the approved hook on the cover
-if (post.slides[0]) { post.slides[0].type = 'cover'; post.slides[0].title = hook.replace(/^(.*)$/, (h) => h); if (sub) post.slides[0].text = undefined, post.slides[0].sub = sub; }
+if (post.slides[0]) { post.slides[0].type = 'cover'; post.slides[0].title = hook.replace(/^(.*)$/, (h) => h); if (sub && !(TEMPLATE && post.slides[0].sub && String(post.slides[0].sub).length <= 90)) post.slides[0].text = undefined, post.slides[0].sub = sub; } // winner templates keep the writer's short cover line ("step by step guidelines", "Spoiler: ...", "Verdict: ...")
 // vocab guard for photo queries
 for (const s of post.slides) {
-  const q = (s.imageQueries || []).filter((x) => PHOTO_VOCAB.includes(x));
-  s.imageQueries = q.length ? q : ['container ship port', 'shipping containers stacked'];
+  const all = (s.imageQueries || []).map(String).filter(Boolean);
+  const q = all.filter((x) => PHOTO_VOCAB.includes(x));
+  const free = TEMPLATE ? all.filter((x) => !PHOTO_VOCAB.includes(x) && x.split(/\s+/).length <= 4).slice(0, 1) : []; // winner templates: first query = the literal product
+  s.imageQueries = [...free, ...q].length ? [...free, ...q] : ['container ship port', 'shipping containers stacked'];
 }
 
 log('Claim extractor (independent of the writer)...');
@@ -98,7 +109,13 @@ const id = new Date().toISOString().slice(0, 10) + (style ? '-ref-' : `-c${no}-`
 const outDir = path.join(root, 'out', 'posts', id);
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });
-fs.writeFileSync(path.join(outDir, 'spec.json'), JSON.stringify({ handle: '@faizanali.shahji', slides: post.slides }, null, 2));
+fs.writeFileSync(path.join(outDir, 'spec.json'), JSON.stringify({ handle: '@faizanali.shahji', ...(TEMPLATE ? { template: TEMPLATE } : {}), slides: post.slides }, null, 2));
+// Facebook caption (own text for the page "Faizan Ali Shahji"; feeder.mjs uses caption_fb.txt)
+try {
+  const fbr = await gemini(FB_RULES.replace('${KEYWORD}', concept.offer.keyword) + '\nPOST SLIDES (use their real numbers and answers): ' + JSON.stringify(post.slides.map((x) => [x.title, x.sub, x.text, x.stat, ...(x.items || [])].filter(Boolean).join(' - '))) + '\nReturn JSON {"fb_caption":"..."}');
+  const fbc = String(fbr.fb_caption || '').replace(/[*_`]/g, '').trim();
+  if (fbc.length > 60) fs.writeFileSync(path.join(outDir, 'caption_fb.txt'), fbc);
+} catch (e) { log('facebook caption failed:', e.message); }
 fs.writeFileSync(path.join(outDir, 'caption.txt'), post.caption + '\n\n' + (post.hashtags || []).join(' '));
 fs.writeFileSync(path.join(outDir, 'review.json'), JSON.stringify({ hook, sub, scores: review.scores, issues_found: review.issues_found, claims: post.claims, factcheck: { ok: fc.ok, unverified: !!fc.unverified, issues: fc.issues }, raw_factcheck: fc.raw }, null, 2));
 
@@ -116,7 +133,15 @@ const pdf = path.join(outDir, `${slugify(lm.title || concept.offer.deliverable).
 await renderLeadMagnet(lm, pdf);
 
 log('V2 restyle (solid hook, easy English, highlights, PDF card)...');
-if (!process.argv.includes('--no-restyle')) {
+if (TEMPLATE) { // winner templates are final as written: no V2 restyle; add the real PDF first page to the CTA slide and re-render with the same photos
+  await renderLeadMagnet(lm, pdf, path.join(outDir, 'pdf_preview.png'));
+  const sp = JSON.parse(fs.readFileSync(path.join(outDir, 'spec.json'), 'utf8'));
+  const cta = sp.slides.find((x) => x.type === 'cta'); if (cta) cta.pdfPreview = 'pdf_preview.png';
+  fs.writeFileSync(path.join(outDir, 'spec.json'), JSON.stringify(sp, null, 2));
+  fs.copyFileSync(path.join(outDir, 'spec.json'), path.join(outDir, 'spec.pre-look.json'));
+  const rr = spawnSync(process.execPath, [path.join(root, 'renderer', 'render.mjs'), path.join(outDir, 'spec.json'), outDir, '--keep-photos'], { encoding: 'utf8' });
+  if (rr.status !== 0) log('final render failed:', (rr.stderr || '').slice(-200));
+} else if (!process.argv.includes('--no-restyle')) {
   const rs = spawnSync(process.execPath, [path.join(here, 'restyle.mjs'), outDir, '--hook', hook, '--sub', sub || ''], { encoding: 'utf8' });
   if (rs.status !== 0) log('restyle skipped (kept original look):', (rs.stderr || '').split('\n').filter((l) => !/quota|HTTP 5|malformed/.test(l)).slice(-2).join(' '));
 }
@@ -131,4 +156,4 @@ try {
   rv.claims = post.claims; rv.promise = promise; rv.factcheck = { ok: fc.ok, unverified: !!fc.unverified, issues: fc.issues }; rv.raw_factcheck = fc.raw;
   fs.writeFileSync(rf, JSON.stringify(rv, null, 2));
 }
-console.log(JSON.stringify({ id, outDir, keyword: concept.offer.keyword, scores: review.scores, promise_gaps: promise.gaps || [], factcheck_unverified: !!fc.unverified, pdf }, null, 1));
+console.log(JSON.stringify({ id, outDir, template: TEMPLATE, keyword: concept.offer.keyword, scores: review.scores, promise_gaps: promise.gaps || [], factcheck_unverified: !!fc.unverified, pdf }, null, 1));

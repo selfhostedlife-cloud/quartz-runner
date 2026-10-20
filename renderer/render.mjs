@@ -8,6 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { judgePhoto, suggestQueries } from './photojudge.mjs';
 import { GRAPHIC_BANDS, THEME_VARS, FONT_IMPORT, layoutCss, layoutHtml } from './layouts.mjs';
+import { winnerHtml } from './winner.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, '..');
@@ -148,6 +149,10 @@ mark.o{background:#FF5A00;color:#fff}
 `;
 
 function slideHtml(s, i, total, handle, imgFile) {
+  if (globalThis.TEMPLATE && !s.layout) { // owner's winning templates (winner.mjs): black, literal hero photo, huge text, save/share footer
+    const pf = s.pdfPreview ? path.resolve(globalThis.SPEC_DIR || '.', s.pdfPreview) : null;
+    return winnerHtml(globalThis.TEMPLATE, s, i, total, handle, imgFile ? dataUri(imgFile) : '', pf && fs.existsSync(pf) ? dataUri(pf) : '');
+  }
   const bg = imgFile ? dataUri(imgFile) : '';
   const fullBg = imgFile ? `background-image:url(${bg})` : `background:${GRAPHIC_BANDS[(i + 1) % GRAPHIC_BANDS.length]}`;
   const last = i === total - 1;
@@ -233,6 +238,7 @@ if (!specPath || !outDir) { console.error('usage: node render.mjs <spec.json> <o
 const spec = JSON.parse(fs.readFileSync(specPath, 'utf8'));
 globalThis.SPEC_DIR = path.dirname(path.resolve(specPath));
 globalThis.SPEC_STYLE = spec.style || null;
+globalThis.TEMPLATE = ['guide', 'math', 'verdict'].includes(spec.template) ? spec.template : null;
 globalThis.PT = spec.photoTheme || null; // { ink:'#RRGGBB', accent, accent2, tagText, font, upper }
 fs.mkdirSync(outDir, { recursive: true });
 const handle = brand.handle; // one handle on every slide, for both accounts (owner rule 2026-10-13): never the per-spec value
@@ -268,7 +274,7 @@ for (let i = 0; i < spec.slides.length; i++) {
       const grow = (sel, min, step) => { for (const el of w.querySelectorAll(sel)) { const fs0 = parseFloat(getComputedStyle(el).fontSize); if (fs0 > min) el.style.setProperty('font-size', Math.max(min, fs0 * step) + 'px', 'important'); } };
       for (let it = 0; it < 30 && w.scrollHeight > w.clientHeight + 2; it++) {
         // phase 1: shrink the big number and headings first (keep body text readable); phase 2: body text, never below 30px
-        if (it < 14) { grow('.big', 100, 0.94); grow('h1,h2', 66, 0.96); } else { grow('p,li,.ln,.small', 30, 0.96); grow('h1,h2', 54, 0.96); }
+        if (it < 14) { grow('.big', 100, 0.94); grow('h1,h2', 66, 0.96); } else { grow('p,li,.ln,.small,.it,.row', 30, 0.96); grow('h1,h2', 54, 0.96); }
       }
     }
   });

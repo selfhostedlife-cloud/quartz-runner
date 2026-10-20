@@ -113,7 +113,24 @@ function publishImages(post) {
   return slides.map((f) => `${RAW}/${token}/${f}`);
 }
 
-export async function feed(state, save, { dryRun = false, notify = async () => {} } = {}) {
+export const FB_CHANNEL = '6ac3f1266a5c39ccb62363a4'; // Buffer channel: Facebook page "Faizan Ali Shahji"
+// Facebook lane: the approved post goes to the Facebook page as a multi-photo post with its OWN caption (caption_fb.txt), 60 minutes after the main Instagram slot.
+// Never blocks Instagram: any failure is recorded on the post (fbError) and reported to the Facebook bot.
+async function feedFacebook(post, urls, mainDue, notifyFb) {
+  if (post.fb?.bufferId) return;
+  let text = '';
+  try { text = fs.readFileSync(path.join(post.dir, 'caption_fb.txt'), 'utf8').trim(); } catch { /* fall back below */ }
+  if (!text) text = fs.readFileSync(path.join(post.dir, 'caption.txt'), 'utf8').replace(/(\s*#\w+)+\s*$/, '').trim();
+  const due = new Date(Math.max(new Date(mainDue).getTime() + 60 * 60e3, Date.now() + 15 * 60e3));
+  const mut = `mutation($i: CreatePostInput!){ createPost(input:$i){ __typename ... on PostActionSuccess { post { id dueAt } } ... on InvalidInputError { message } ... on UnexpectedError { message } ... on LimitReachedError { message } } }`;
+  const res = (await gql(mut, { i: { channelId: FB_CHANNEL, text, assets: urls.map((u) => ({ image: { url: u } })), mode: 'customScheduled', dueAt: due.toISOString(), schedulingType: 'automatic', saveToDraft: false, needsApproval: false, source: 'n8n-studio', metadata: { facebook: { type: 'post' } } } })).data?.createPost;
+  if (res?.__typename !== 'PostActionSuccess') { post.fbError = res?.message || res?.__typename || 'no answer'; log('facebook createPost failed:', post.fbError); await notifyFb('Facebook post for #' + post.no + ' was NOT queued: ' + post.fbError); return; }
+  post.fb = { channelId: FB_CHANNEL, bufferId: res.post.id, dueAt: res.post.dueAt }; delete post.fbError;
+  const ist = new Date(res.post.dueAt).toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false });
+  await notifyFb('Queued on Facebook: #' + post.no + ' "' + post.topic + '"\nGoes live ' + ist + ' IST on the page Faizan Ali Shahji (' + urls.length + ' photos).\n\nCAPTION:\n' + text.slice(0, 1500));
+}
+
+export async function feed(state, save, { dryRun = false, notify = async () => {}, notifyFb = async () => {} } = {}) {
   const done = [];
   const ready = state.posts.filter((p) => p.status === 'approved' && !(p.buffer || []).length)
     .map((p) => { const pr = predict(p); p.predicted = +pr.score.toFixed(2); p.predictBasis = pr.basis.map((b) => `${b.k}(${b.shrunk}x,n${b.n})`); return p; })
@@ -167,7 +184,8 @@ Chosen from ${ready.length} approved (model predicts ${post.predicted}x your nor
 Music to add after it is live: ${post.musicUsed?.[name] || 'pick a trending instrumental'}
 Buffer slots used: ${q.filter((x) => x.channelId === ch.id).length}/${LIMIT}`, name);
       }
-      done.push({ no: post.no, buffer: post.buffer });
+      try { await feedFacebook(post, urls, post.dueAt, notifyFb); save(); } catch (e) { post.fbError = e.message; log('facebook lane error:', e.message); }
+      done.push({ no: post.no, buffer: post.buffer, fb: post.fb?.dueAt || null });
     }
   }
   return { fed: done, ready: ready.length, queued: q.length };

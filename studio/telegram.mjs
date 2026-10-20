@@ -81,4 +81,5 @@ export function makeBot(TOKEN) {
 
 export const mainBot = makeBot(process.env.TELEGRAM_BOT_TOKEN);
 export const testBot = makeBot(process.env.TELEGRAM_BOT_TOKEN_TEST);
+export const fbBot = makeBot(process.env.TELEGRAM_BOT_TOKEN_FB); // Facebook page "Faizan Ali Shahji": its captions, queue and go-live alerts
 export const { hasToken, sendMessage, answerCallback, editMarkup, getUpdates, sendAlbum, sendPhoto, sendDocument, downloadFile } = mainBot;

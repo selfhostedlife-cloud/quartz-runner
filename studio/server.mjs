@@ -43,8 +43,10 @@ for (const p of state.posts) if (p.dir && !fs.existsSync(p.dir)) { const cand = 
 const bgTasks = new Set();
 const bg = (p) => { const q = Promise.resolve(p).catch(() => {}); bgTasks.add(q); q.finally(() => bgTasks.delete(q)); return p; };
 const byNo = (n) => state.posts.find((p) => p.no === Number(n));
-const BOTS = { main: tg.mainBot, test: tg.testBot };
+const BOTS = { main: tg.mainBot, test: tg.testBot, fb: tg.fbBot };
 state.chats ||= {}; if (state.chatId && !state.chats.main) state.chats.main = state.chatId;
+// the Facebook bot talks to the same owner chat as the main bot (same person; the owner only has to press Start once in the Facebook bot)
+if (!state.chats.fb && state.chats.main && BOTS.fb.hasToken()) state.chats.fb = state.chats.main;
 state.offsets ||= {}; if (state.offset && state.offsets.main == null) state.offsets.main = state.offset;
 // One bot per account. An account is served by its own bot when that bot is configured and paired; otherwise by the main bot (prefixed so you can tell).
 const botFor = (acct) => (acct === 'test' && BOTS.test.hasToken() && state.chats.test ? 'test' : 'main');
@@ -60,6 +62,7 @@ const photoTo = (acct, file, caption, markup) => {
   return BOTS[who].sendPhoto(chat, file, (who === 'main' && acct === 'test' ? '[TEST account] ' : '') + (caption || ''), markup).catch((e) => log('photo failed:', e.message));
 };
 const say = (text, extra) => sendTo('main', text, extra);
+const sendFb = (text, extra) => { const chat = state.chats.fb; if (!chat || !BOTS.fb.hasToken()) { log('(facebook bot unpaired) ' + String(text).slice(0, 80)); return null; } return BOTS.fb.sendMessage(chat, text, extra).catch((e) => log('facebook bot send failed:', e.message)); };
 const ans = (cb, text) => BOTS[cb._who || 'main'].answerCallback(cb.id, text);
 
 // ---------- child process runner ----------
@@ -140,7 +143,7 @@ async function runFeed(dryRun = false) {
   if (feeding) return { busy: true };
   feeding = true;
   try {
-    const out = await feed(state, save, { dryRun, notify: (t, acct) => sendTo(acct || 'main', t) });
+    const out = await feed(state, save, { dryRun, notify: (t, acct) => sendTo(acct || 'main', t), notifyFb: (t) => sendFb(t) });
     if (!dryRun) out.cleanup = await cleanupMedia(state, save);
     return out;
   } finally { feeding = false; }
@@ -383,6 +386,7 @@ async function onMessage(m, who = 'main') {
       : 'Paired. This is the MAIN bot (@faizanali.shahji): approvals of new posts, reference posts you send me, queue, go-live alerts, music reminders and results charts.\nCommands: /status, /results, /run, /learn, /help');
   }
   if (String(chat) !== String(state.chats[who])) return reply('This bot is private.');
+  if (who === 'fb') return onFbMessage(text, reply);
   if (who === 'main' && m.reply_to_message && m.reply_to_message.text?.startsWith('Rejected #')) {
     const no = Number(m.reply_to_message.text.match(/#(\d+)/)[1]); const p = byNo(no);
     if (p) { p.rejectReason = text; save(); const f = path.join(dataDir, 'feedback.json'); const fb = readJson(f, []); fb.push({ at: new Date().toISOString(), topic: p.topic, hook: p.hook, reason: text }); fs.writeFileSync(f, JSON.stringify(fb, null, 2)); }
@@ -416,6 +420,18 @@ async function onMessage(m, who = 'main') {
 }
 
 // plain text from the owner: a post number makes it a design edit of that post, anything else becomes a standing rule that is injected into every writing prompt
+function onFbMessage(text, reply) {
+  const cap = (p) => path.join(p.dir, 'caption_fb.txt');
+  if (/^\/(start|help)\b/.test(text) || !text.startsWith('/')) return reply('Facebook bot for the page "Faizan Ali Shahji".\nEvery post you approve on the main bot is queued on Facebook automatically, 60 minutes after its main Instagram slot, as a multi-photo post with its OWN caption (written for older small-business readers, a question to get comments).\n\n/status - the Facebook queue\n/caption 21 - show the Facebook caption of post #21\n/fbedit 21 <new caption> - replace it (before it is queued)');
+  if (/^\/status\b/.test(text)) {
+    const ist = (d) => new Date(d).toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }) + ' IST';
+    const l = state.posts.slice(-8).map((p) => '#' + p.no + ' [' + (p.fb ? 'queued ' + ist(p.fb.dueAt) : p.fbError ? 'FAILED: ' + p.fbError.slice(0, 60) : p.status === 'approved' ? 'waits for a slot' : p.status === 'scheduled' ? 'not on Facebook' : p.status) + '] ' + p.topic);
+    return reply(l.join('\n') || 'No posts yet.');
+  }
+  let m = text.match(/^\/caption\s+(\d+)/); if (m) { const p = byNo(m[1]); if (!p) return reply('No post #' + m[1]); try { return reply('Facebook caption of #' + p.no + ':\n\n' + fs.readFileSync(cap(p), 'utf8')); } catch { return reply('#' + p.no + ' has no separate Facebook caption (the Instagram caption without hashtags is used).'); } }
+  m = text.match(/^\/fbedit\s+(\d+)\s+([\s\S]+)/); if (m) { const p = byNo(m[1]); if (!p) return reply('No post #' + m[1]); if (p.fb) return reply('#' + p.no + ' is already queued on Facebook; change it in Buffer.'); fs.writeFileSync(cap(p), m[2].trim()); dirty = true; return reply('Saved. This caption is used when #' + p.no + ' is queued on Facebook.'); }
+  return reply('Commands: /status, /caption N, /fbedit N <text>');
+}
 async function onFreeText(text, reply) {
   if (text.length < 15 || /\?\s*$/.test(text)) return reply(HELP_MAIN);
   const m = text.match(/(?:#|\bpost\s*(?:no\.?|number)?\s*|\bno\.?\s*)(\d{1,3})\b/i); const post = m && byNo(m[1]);
@@ -496,10 +512,13 @@ async function dailyRun(count = 2, { force = false } = {}) {
       const info = JSON.parse(r.out.trim().slice(r.out.indexOf('{')));
       const concept = concepts[no - 1];
       let lookName = 'ink-gold'; // design rotation: never one of the last 4 looks
-      try { lookName = pickLook(state.posts); if (lookName !== 'ink-gold') { const lr = await run('looks.mjs', ['apply', info.outDir, lookName], 10 * 60e3); if (lr.code !== 0) throw new Error(lr.err.slice(-200)); } } catch (e) { log('look failed, keeping the original look:', e.message); lookName = 'ink-gold'; }
+      if (info.template) lookName = 'winner-' + info.template; // owner's winning templates have one fixed look (black + literal photo + one accent colour)
+      else try { lookName = pickLook(state.posts); if (lookName !== 'ink-gold') { const lr = await run('looks.mjs', ['apply', info.outDir, lookName], 10 * 60e3); if (lr.code !== 0) throw new Error(lr.err.slice(-200)); } } catch (e) { log('look failed, keeping the original look:', e.message); lookName = 'ink-gold'; }
       const post = { no: ++state.seq, id: info.id, dir: info.outDir, topic: concept.title, hook: opt.hook, keyword: info.keyword, leadmagnet: path.basename(info.pdf || ''), look: lookName, status: 'awaiting_approval', createdAt: new Date().toISOString() };
+      post.template = info.template || null;
       state.posts.push(post); save();
       await sendPreview(post);
+      try { const fbc = fs.readFileSync(path.join(post.dir, 'caption_fb.txt'), 'utf8').trim(); if (fbc) await sendFb('Facebook caption for new post #' + post.no + ' (used automatically when you approve it on the main bot):\n\n' + fbc + '\n\nChange it with: /fbedit ' + post.no + ' <new caption>'); } catch { /* no fb caption */ }
     }
     return { started: true };
   } catch (e) { await say('Daily run failed: ' + e.message + '\nSend /run to try again.'); throw e; }
@@ -755,11 +774,12 @@ function catchUpDaily() {
   // bg(): in the cloud tick the process must wait for the run, else exit(0) kills it mid-render (drafts were lost 13-19 Oct)
   bg(dailyRun().catch((e) => { log('daily run error:', e.message); if (state.lastDailyRunDate === istDate() && !state.posts.some((p) => p.createdAt && p.createdAt.slice(0, 10) === new Date().toISOString().slice(0, 10))) { state.lastDailyRunDate = null; save(); } }));
 }
-const MENU_VERSION = 'v3-2026-10-20';
+const MENU_VERSION = 'v4-2026-10-20-fb';
 function setMenus() {
   const main = [['status', 'Latest posts and go-live times'], ['results', 'Colour results chart + last-5 table'], ['table', 'Last 5 posts: views, likes, comments, shares, saves, follows'], ['run', 'Write new posts now'], ['learn', 'Re-read results, update the plan'], ['hook', 'Plain-English hooks: /hook 17'], ['fresh', 'New hook + design: /fresh 17'], ['edit', 'Colours, sizes, pills, fonts, photo: /edit 21 2 ...'], ['fix', 'Rewrite a slide text: /fix 18 2 what you want'], ['look', 'Change design: /look 17'], ['looks', 'List the design looks'], ['rules', 'Your standing rules (any plain message adds one)'], ['ref', 'How to copy a competitor post'], ['help', 'All commands']].map(([command, description]) => ({ command, description }));
   BOTS.main.setCommands(main).catch((e) => log('commands menu:', e.message));
   if (BOTS.test.hasToken()) BOTS.test.setCommands([{ command: 'status', description: 'Queue of this account' }, { command: 'results', description: 'Colour chart + last-5 table' }, { command: 'table', description: 'Last 5 posts table' }]).catch(() => {});
+  if (BOTS.fb.hasToken()) BOTS.fb.setCommands([{ command: 'status', description: 'Facebook queue' }, { command: 'caption', description: 'Show a post Facebook caption: /caption 21' }, { command: 'fbedit', description: 'Change it: /fbedit 21 new caption' }, { command: 'help', description: 'How it works' }]).catch(() => {});
   state.cmdMenu = MENU_VERSION; save();
 }
 if (!TICK) {
@@ -769,7 +789,7 @@ setInterval(musicReminders, 5 * 60e3);
 setInterval(goLiveWatcher, 5 * 60e3);
 setTimeout(() => { resetChecksOnStart(); goLiveWatcher(); }, 25e3);
 
-server.listen(PORT, '127.0.0.1', () => { log(`studio listening on http://127.0.0.1:${PORT}`); pollLoop('main'); pollLoop('test');
+server.listen(PORT, '127.0.0.1', () => { log(`studio listening on http://127.0.0.1:${PORT}`); pollLoop('main'); pollLoop('test'); pollLoop('fb');
   setMenus();
 });
 }
@@ -815,7 +835,7 @@ async function runTick() {
   const ym = istDate().slice(0, 7); const doSquash = !noSched && process.env.DATA_REPO_DIR && state.lastSquash !== ym && istNow().getUTCHours() >= 5; if (doSquash) { state.lastSquash = ym; save(); }
   let lastWatch = 0, lastPersist = 0;
   while (Date.now() < deadline || bgTasks.size) {
-    for (const who of ['main', 'test']) await pollOnce(who, 8);
+    for (const who of ['main', 'test', 'fb']) await pollOnce(who, 6);
     flushReference();
     if (Date.now() - lastWatch > 120e3) { await goLiveWatcher(); await musicReminders(); lastWatch = Date.now(); }
     if (dirty && Date.now() - lastPersist > 15e3) { dirty = false; lastPersist = Date.now(); const r = persist('studio state'); if (r.error) log('persist:', r.error); }
