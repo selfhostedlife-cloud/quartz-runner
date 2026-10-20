@@ -62,7 +62,7 @@ const STORIES = {
     const eu = ['Germany', 'United Kingdom', 'France', 'Poland', 'Italy', 'Spain', 'Austria', 'Switzerland'];
     const euSum = R.filter((r) => eu.includes(r.c)).reduce((a, r) => a + r.v23, 0);
     return {
-      font: 'Bebas Neue', coverQ: ['leather shoes', 'shoes factory'],
+      font: 'Poppins', coverQ: ['leather shoes', 'shoes factory'],
       hook: `The USA cut Indian shoe orders by ${Math.abs(us.ch)}%. France doubled.`,
       title: `The USA cut Indian shoe orders by ==${Math.abs(us.ch)}%==.\n++France doubled.++`, sub: 'Footwear with leather uppers, UN Comtrade 2022 vs 2023.',
       facts: [`USA: ${money(us.v22)} to ${money(us.v23)} (${sgn(us.ch)}).`, `France: ${money(fr.v22)} to ${money(fr.v23)} (${fr.x.toFixed(1)}x).`],
@@ -80,7 +80,7 @@ const STORIES = {
     const us = by('USA');
     const rest = P.tot23 - us.v23; const top10 = R.reduce((a, r) => a + r.v23, 0);
     return {
-      font: 'Anton', coverQ: ['towels stack folded', 'terry towels'],
+      font: 'Montserrat', coverQ: ['towels stack folded', 'terry towels'],
       hook: `${share(us.v23)}% of Indian terry towel exports go to ONE country.`,
       title: `==${share(us.v23)}%== of Indian terry towel exports go to ++ONE country.++`, sub: 'UN Comtrade 2023: who really buys.',
       facts: [`The USA bought ${money(us.v23)} of ${money(P.tot23)}.`, `The next biggest, the UK, bought ${money(by('United Kingdom').v23)}.`],

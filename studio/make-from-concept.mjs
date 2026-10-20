@@ -6,6 +6,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { gemini, factCheck, slugify, RULES, SLIDE_SCHEMA, PHOTO_VOCAB } from './agents.mjs';
 import { renderLeadMagnet } from './leadmagnet.mjs';
+import { mistakeFixAllowed, MF_RULE_ON, MF_RULE_OFF, directivesBlock } from './rules.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, '..');
@@ -20,11 +21,15 @@ const concept = data.concepts[no - 1];
 let live = null; try { live = JSON.parse(fs.readFileSync(path.join(here, 'data', 'playbook-live.json'), 'utf8')); } catch { /* none yet */ }
 const hook = arg('--hook'), sub = arg('--sub');
 const log = (...a) => console.error('[studio]', ...a);
+const MF_ON = mistakeFixAllowed(); log('Mistake/Fix slide allowed this week:', MF_ON);
+const OWNER_RULES = directivesBlock();
 
 const BANNED = 'unlock, secret, ultimate, master, game-changer, shocking, hack, revolutionary, "in today\'s world", "it is important to", "many exporters", "most exporters", "countless", "significant"';
 
 const copyPrompt = `You are the Copywriter for @faizanali.shahji, India import-export education. Audience: first-time and small Indian exporters. Voice: direct, practical, plain English, like an experienced exporter talking to a friend. Real data about this account:
 ${JSON.stringify({ winners: playbook.winners, flops: playbook.flops, voice: playbook.voice })}
+
+${OWNER_RULES}
 
 Write ONE carousel for this approved concept:
 ${JSON.stringify({ title: concept.title, pain_point: concept.pain_point, outline: concept.slide_outline, offer: concept.offer, fact_risks: concept.fact_risks })}
@@ -38,9 +43,9 @@ ${style ? 'REFERENCE POST ANALYSIS (the owner shared a competitor post that perf
 QUALITY BAR - every rule is mandatory:
 1. ${N_SLIDES} slides: cover, ${N_SLIDES - 2} content slides, 1 cta. Story arc: hook -> the real scenario and what went wrong -> 3-4 specific insights/steps -> the fix/payoff -> offer.
 2. Every content slide teaches ONE concrete, usable thing: a named document, clause, platform, certificate, scheme, step order, or number. A reader must be able to act on it today. No slide may be a vague statement.
-3. Include one clear MISTAKE -> FIX pair and one mini-example with numbers. Invented people/numbers MUST be labelled "illustrative" on the slide where they first appear.
+3. ${MF_ON ? MF_RULE_ON : MF_RULE_OFF} Include one mini-example with numbers. Invented people/numbers MUST be labelled "illustrative" on the slide where they first appear.
 4. Only name real, well-known things (e.g. ICC UCP 600, ECGC, DGFT, Heimtextil, Europages, OEKO-TEX Standard 100). If you are not certain a platform/clause/rule exists exactly as you describe, do NOT name it; instead tell the reader what to check and where.
-5. Max 24 words per slide text. Titles <= 9 words. Short, concrete, no filler. Each content slide ends with a teaser (<=7 words) that pulls to the next slide.
+5. Titles <= 8 words (big, plain words). Every content slide has a DESCRIPTION under the title: one or two COMPLETE plain sentences (14-30 words in total) that explain the point and why it matters to the reader. Never a 2-3 word fragment. No filler. Each content slide ends with a teaser (<=7 words) that pulls to the next slide.
 6. BANNED words/phrases: ${BANNED}.
 7. CTA slide: title "Get the <Offer Name>", button "Comment  ${concept.offer.keyword}", text = "Inside: " + exactly 3 concrete things in the PDF + ". Follow so the DM reaches you." (max 28 words).
 8. Caption (plain text, no asterisks): line 1 = the hook; then 2-3 short value lines; then "Comment ${concept.offer.keyword} and I'll DM you the <offer name>. Follow so the DM reaches you."; max 800 chars. hashtags: EXACTLY 5 relevant (Instagram allows max 5), no brand/person names.
@@ -59,7 +64,7 @@ let draft = await gemini(copyPrompt);
 
 log('Critic + reviser...');
 const reviewPrompt = `You are a ruthless editor for an Instagram carousel about Indian import-export. Score the DRAFT 1-5 on: hook_strength, pain_relevance, specificity (named docs/clauses/numbers, not vague), story_pull (each slide earns the next swipe), offer_fit (offer solves the pain; CTA lists 3 concrete contents), accuracy_risk (5 = nothing doubtful; 1 = invented or doubtful facts stated as fact).
-Then output a FINAL version that fixes every score below 4: replace vague lines with concrete ones, remove any claim you are not certain is true (rephrase as "check the current rule at <source>"), keep the cover hook and sub EXACTLY, keep imageQueries chosen verbatim from: ${PHOTO_VOCAB.join(' | ')}.
+Then output a FINAL version that fixes every score below 4: replace vague lines with concrete ones, remove any claim you are not certain is true (rephrase as "check the current rule at <source>"), keep the cover hook and sub EXACTLY, keep every slide description as 1-2 complete descriptive sentences (never shorten it to a few words), ${MF_ON ? '' : 'remove any Mistake/Fix or wrong-vs-right slide (not allowed this week), '}keep imageQueries chosen verbatim from: ${PHOTO_VOCAB.join(' | ')}.
 BANNED: ${BANNED}.
 Concept pain: ${concept.pain_point}. Offer: ${JSON.stringify(concept.offer)}.
 DRAFT: ${JSON.stringify(draft)}

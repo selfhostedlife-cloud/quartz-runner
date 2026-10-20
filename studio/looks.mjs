@@ -14,19 +14,19 @@ const dataDir = path.join(here, 'data');
 const rd = (f, d) => { try { return JSON.parse(fs.readFileSync(path.join(dataDir, f), 'utf8')); } catch { return d; } };
 
 export const LOOKS = {
-  // ---- photo looks: stock photo background, different colours / fonts / headline style ----
-  'ink-gold': { photo: true, label: 'Navy overlay, gold highlights, Archivo Black (the original)', theme: null },
-  'saffron-photo': { photo: true, label: 'Warm dark-brown overlay, saffron highlights, tall Anton capitals', theme: { ink: '#1A0B00', accent: '#FF9F1C', accent2: '#C2410C', tagText: '#1A0B00', font: 'Anton', upper: true } },
-  'royal-photo': { photo: true, label: 'Deep purple overlay, yellow highlights, Archivo Black', theme: { ink: '#140A33', accent: '#FFD23F', accent2: '#7C3AED', tagText: '#140A33', font: 'Archivo Black' } },
-  'emerald-photo': { photo: true, label: 'Deep green overlay, mint highlights, Rubik', theme: { ink: '#04201A', accent: '#34F5B0', accent2: '#0F766E', tagText: '#04201A', font: 'Rubik' } },
-  'crimson-photo': { photo: true, label: 'Dark red overlay, red highlights, condensed Bebas Neue capitals', theme: { ink: '#1A0508', accent: '#FF4D5E', accent2: '#B91C1C', tagText: '#FFFFFF', font: 'Bebas Neue', upper: true } },
-  'ocean-photo': { photo: true, label: 'Deep teal overlay, aqua highlights, Fraunces serif', theme: { ink: '#04202E', accent: '#5CE1E6', accent2: '#1D4ED8', tagText: '#04202E', font: 'Fraunces' } },
-  'serif-gold-photo': { photo: true, label: 'Navy overlay, gold highlights, DM Serif Display headlines', theme: { ink: '#0A0F1E', accent: '#F5B82E', accent2: '#7C3AED', tagText: '#0A0F1E', font: 'DM Serif Display' } },
+  // owner 2026-10-20: neon, high-contrast colours that stop the scroll (no soft teal / pink); loose, wide fonts (no tight condensed ones like Anton / Bebas Neue)
+  'ink-gold': { photo: true, label: 'Black-navy overlay, neon yellow highlights, Archivo Black', theme: { ink: '#070B18', accent: '#FFE600', accent2: '#FF5A00', tagText: '#000000', font: 'Archivo Black' } },
+  'volt-photo': { photo: true, label: 'Black overlay, volt-yellow highlights, electric-violet pills, Poppins', theme: { ink: '#050505', accent: '#E6FF00', accent2: '#7A00FF', tagText: '#000000', font: 'Poppins' } },
+  'neon-green-photo': { photo: true, label: 'Near-black overlay, neon green highlights, blue pills, Montserrat', theme: { ink: '#030A05', accent: '#39FF14', accent2: '#0047FF', tagText: '#000000', font: 'Montserrat' } },
+  'fire-photo': { photo: true, label: 'Black overlay, neon orange highlights, red pills, Archivo Black', theme: { ink: '#0A0500', accent: '#FF6A00', accent2: '#E10600', tagText: '#000000', font: 'Archivo Black' } },
+  'electric-photo': { photo: true, label: 'Deep blue-black overlay, neon yellow highlights, electric blue pills, Rubik', theme: { ink: '#00061F', accent: '#FFE600', accent2: '#0050FF', tagText: '#000000', font: 'Rubik' } },
+  'signal-red-photo': { photo: true, label: 'Black overlay, signal-red highlights with white text, Poppins', theme: { ink: '#0A0000', accent: '#FF1F1F', accent2: '#FFE600', tagText: '#FFFFFF', font: 'Poppins' } },
+  'royal-photo': { photo: true, label: 'Deep purple overlay, neon yellow highlights, Montserrat', theme: { ink: '#12002E', accent: '#FFE600', accent2: '#8A2BFF', tagText: '#000000', font: 'Montserrat' } },
   // ---- text-only test looks (no photo): used about 1 post in 5 to see whether they pull more or less ----
-  'cream-serif': { photo: false, label: 'TEST no photo: cream paper, serif headlines, red highlight', design: { typographic: true, palette: { bg: '#FFF3DC', fg: '#1A1A2E', accent: '#C1121F', accent2: '#1A1A2E' }, font_guess: 'DM Serif Display' } },
-  'saffron-punch': { photo: false, label: 'TEST no photo: saffron background, black text, navy highlight', design: { typographic: true, palette: { bg: '#FF9F1C', fg: '#111111', accent: '#0B2A5B', accent2: '#7B2CBF' }, font_guess: 'Anton' } },
-  'mint-fresh': { photo: false, label: 'TEST no photo: light mint, deep green text', design: { typographic: true, palette: { bg: '#E6F7EE', fg: '#0B2B22', accent: '#0F9D58', accent2: '#0B2B22' }, font_guess: 'Rubik' } },
-  'red-news': { photo: false, label: 'TEST no photo: white page, black text, red highlight, Bebas Neue', design: { typographic: true, palette: { bg: '#FFFFFF', fg: '#111111', accent: '#E63946', accent2: '#111111' }, font_guess: 'Bebas Neue' } },
+  'cream-serif': { photo: false, label: 'TEST no photo: cream paper, serif headlines, red highlight', design: { typographic: true, palette: { bg: '#FFF3DC', fg: '#111111', accent: '#E10600', accent2: '#111111' }, font_guess: 'DM Serif Display' } },
+  'saffron-punch': { photo: false, label: 'TEST no photo: neon orange background, black text, navy highlight', design: { typographic: true, palette: { bg: '#FF6A00', fg: '#000000', accent: '#0B2A5B', accent2: '#7A00FF' }, font_guess: 'Archivo Black' } },
+  'volt-black': { photo: false, label: 'TEST no photo: black page, white text, volt-yellow highlight', design: { typographic: true, palette: { bg: '#050505', fg: '#FFFFFF', accent: '#E6FF00', accent2: '#7A00FF' }, font_guess: 'Poppins' } },
+  'red-news': { photo: false, label: 'TEST no photo: white page, black text, signal-red highlight, Archivo Black', design: { typographic: true, palette: { bg: '#FFFFFF', fg: '#000000', accent: '#E10600', accent2: '#000000' }, font_guess: 'Archivo Black' } },
 };
 const PHOTO = Object.keys(LOOKS).filter((k) => LOOKS[k].photo), TEXTONLY = Object.keys(LOOKS).filter((k) => !LOOKS[k].photo);
 

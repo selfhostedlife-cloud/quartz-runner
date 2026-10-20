@@ -3,18 +3,18 @@
 export const GRAPHIC_BANDS = ['linear-gradient(135deg,#1E2A5E,#0B1230)', 'linear-gradient(135deg,#5B21B6,#2E1065)', 'linear-gradient(135deg,#B45309,#7C2D12)', 'linear-gradient(135deg,#0F766E,#0B1230)'];
 
 export const THEME_VARS = {
-  dark:    { bg: 'radial-gradient(1200px 700px at 85% -10%,#1B2A66 0%,#0A0F1E 60%)', fg: '#fff', ac: '#F5B82E', on: '#0A0F1E', mu: 'rgba(255,255,255,.2)', ac2: '#7C3AED', pill: 'rgba(10,15,30,.55)' },
+  dark:    { bg: 'radial-gradient(1200px 700px at 85% -10%,#1B2A66 0%,#0A0F1E 60%)', fg: '#fff', ac: '#FFE600', on: '#0A0F1E', mu: 'rgba(255,255,255,.2)', ac2: '#8A2BFF', pill: 'rgba(10,15,30,.55)' },
   light:   { bg: '#F4EFE6', fg: '#0A0F1E', ac: '#5B21B6', on: '#fff', mu: 'rgba(10,15,30,.15)', ac2: '#E11D2E', pill: 'rgba(10,15,30,.9)' },
-  gold:    { bg: 'linear-gradient(160deg,#F5B82E,#E89B0C)', fg: '#0A0F1E', ac: '#0A0F1E', on: '#F5B82E', mu: 'rgba(10,15,30,.18)', ac2: '#7C3AED', pill: 'rgba(10,15,30,.9)' },
-  purple:  { bg: 'linear-gradient(160deg,#6D28D9,#2E1065)', fg: '#fff', ac: '#F5B82E', on: '#0A0F1E', mu: 'rgba(255,255,255,.22)', ac2: '#F26A1B', pill: 'rgba(10,15,30,.55)' },
+  gold:    { bg: 'linear-gradient(160deg,#FFE600,#FFC800)', fg: '#0A0F1E', ac: '#0A0F1E', on: '#FFE600', mu: 'rgba(10,15,30,.18)', ac2: '#8A2BFF', pill: 'rgba(10,15,30,.9)' },
+  purple:  { bg: 'linear-gradient(160deg,#6D28D9,#2E1065)', fg: '#fff', ac: '#FFE600', on: '#0A0F1E', mu: 'rgba(255,255,255,.22)', ac2: '#FF5A00', pill: 'rgba(10,15,30,.55)' },
   amber:   { bg: 'radial-gradient(900px 600px at 15% 0%,#6B4510 0%,#241503 70%)', fg: '#FFF1D6', ac: '#FFB020', on: '#241503', mu: 'rgba(255,241,214,.18)', ac2: '#FF6B35', pill: 'rgba(36,21,3,.7)' },
   monored: { bg: '#0B0B0C', fg: '#FFFFFF', ac: '#FF2D3D', on: '#FFFFFF', mu: 'rgba(255,255,255,.16)', ac2: '#FFFFFF', pill: 'rgba(255,45,61,.9)' },
-  mint:    { bg: 'linear-gradient(160deg,#065F46,#022C22)', fg: '#ECFDF5', ac: '#34F5B0', on: '#022C22', mu: 'rgba(236,253,245,.18)', ac2: '#FDE047', pill: 'rgba(2,44,34,.7)' },
+  mint:    { bg: 'linear-gradient(160deg,#06140B,#000)', fg: '#FFFFFF', ac: '#39FF14', on: '#06140B', mu: 'rgba(255,255,255,.2)', ac2: '#FF5A00', pill: 'rgba(0,0,0,.7)' },
   cream:   { bg: '#F7F3EA', fg: '#0B1B4D', ac: '#E11D2E', on: '#FFFFFF', mu: 'rgba(11,27,77,.13)', ac2: '#0B1B4D', pill: 'rgba(11,27,77,.92)' },
-  lime:    { bg: 'linear-gradient(160deg,#0F4D38,#052018)', fg: '#F4FFE0', ac: '#C6F135', on: '#052018', mu: 'rgba(244,255,224,.2)', ac2: '#FF8A3D', pill: 'rgba(5,32,24,.7)' },
+  lime:    { bg: 'linear-gradient(160deg,#101010,#000)', fg: '#FFFFFF', ac: '#D4FF00', on: '#000000', mu: 'rgba(255,255,255,.2)', ac2: '#FF2D00', pill: 'rgba(0,0,0,.7)' },
 };
 
-export const FONT_IMPORT = "@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600;800&family=Bebas+Neue&family=DM+Serif+Display&family=Anton&family=Rubik:wght@800&family=Fraunces:opsz,wght@9..144,900&family=Space+Mono:wght@400;700&display=swap');";
+export const FONT_IMPORT = "@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600;800;900&family=Poppins:wght@800;900&family=Montserrat:wght@800;900&family=Bebas+Neue&family=DM+Serif+Display&family=Anton&family=Rubik:wght@800&family=Fraunces:opsz,wght@9..144,900&family=Space+Mono:wght@400;700&display=swap');";
 
 export const layoutCss = `
 body{font-family:Inter,sans-serif}
@@ -30,7 +30,7 @@ body{font-family:Inter,sans-serif}
 .nophoto:before{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.14) 2px,transparent 2.5px);background-size:34px 34px}
 .nophoto:after{background:linear-gradient(to bottom,rgba(10,15,30,0) 55%,#0A0F1E 100%)}
 .ly{position:absolute;left:70px;right:70px}
-.big2{line-height:1;letter-spacing:-.02em;color:var(--ac)}
+.big2{line-height:1.05;letter-spacing:.005em;color:var(--ac)}
 .wm{position:absolute;right:40px;top:130px;font-family:var(--disp,'Archivo Black');font-size:430px;line-height:1;opacity:.08;letter-spacing:-.04em}
 /* leaderboard */
 .row{display:flex;align-items:center;gap:18px;height:84px}
@@ -74,7 +74,7 @@ body{font-family:Inter,sans-serif}
 .rcpt .rf{border-top:3px dashed #1b1b1b;margin-top:8px;padding-top:8px;font-size:23px;text-align:center}
 /* statement */
 .stm{border-left:16px solid var(--ac);padding-left:40px}
-.stm .sl{font-family:var(--disp,'Archivo Black');line-height:1.08;letter-spacing:-.01em}
+.stm .sl{font-family:var(--disp,'Archivo Black');line-height:1.14;letter-spacing:.01em}
 .stm .ss{font-size:30px;margin-top:30px;opacity:.85;line-height:1.35}
 `;
 
@@ -112,7 +112,7 @@ function pack(items, W, H, maxR) {
 export function layoutHtml(s, i, total, handle) {
   const th = THEME_VARS[s.theme] ? s.theme : 'dark';
   const frame = (inner) => `<div class="handle">${esc(handle)}</div><div class="num">${i + 1}/${total}</div>${inner}`;
-  const head = (size = 58) => `<div class="ly" style="top:128px"><span class="tag">${esc(s.kicker || '')}</span><h2 style="font-size:${size}px;margin-top:16px;line-height:1.05">${hl(s.title)}</h2></div>`;
+  const head = (size = 58) => `<div class="ly" style="top:128px"><span class="tag">${esc(s.kicker || '')}</span><h2 style="font-size:${Math.round(size * 1.28)}px;margin-top:16px;line-height:1.12;letter-spacing:.01em">${hl(s.title)}</h2></div>`;
   const note = (top, size = 31) => (s.text ? `<div class="ly" style="top:${top}px"><p style="font-size:${size}px;margin-top:0;line-height:1.3">${para(s.text)}</p></div>` : '');
 
   if (s.layout === 'hero') {
@@ -120,7 +120,7 @@ export function layoutHtml(s, i, total, handle) {
       <div class="ly" style="top:150px;bottom:140px;display:flex;flex-direction:column;justify-content:center">
         <div><span class="tag">${esc(s.kicker || '')}</span></div>
         <div class="big2" style="font-size:${s.bigSize || 210}px;margin-top:26px">${esc(s.stat)}</div>
-        <h2 style="font-size:64px;margin-top:10px">${hl(s.title)}</h2>${s.text ? `<p style="font-size:38px">${para(s.text)}</p>` : ''}</div>`);
+        <h2 style="font-size:80px;margin-top:10px">${hl(s.title)}</h2>${s.text ? `<p style="font-size:38px">${para(s.text)}</p>` : ''}</div>`);
   }
   if (s.layout === 'leaderboard') {
     const rows = s.rows || []; const max = Math.max(...rows.map((r) => r.value), 1);
@@ -191,7 +191,7 @@ export function layoutHtml(s, i, total, handle) {
     return frame(`${head(50)}<div class="ly" style="top:${s.text ? 290 : 300}px;left:90px;right:90px"><div class="rcpt"><div class="rh">${esc(s.head || 'PRICE LIST')}</div>${rows.map((r) => `<div class="rr${r.hi ? ' hi' : r.lo ? ' lo' : ''}"><span class="a">${esc(r.label)}</span><span class="d"></span><span class="b">${esc(r.vl)}</span></div>`).join('')}${s.foot ? `<div class="rf">${esc(s.foot)}</div>` : ''}</div></div>`);
   }
   if (s.layout === 'statement') {
-    const sz = s.size || 84;
+    const sz = s.size || 100;
     return frame(`<div class="ly" style="top:150px;bottom:140px;display:flex;flex-direction:column;justify-content:center"><div><span class="tag">${esc(s.kicker || '')}</span></div><div class="stm" style="margin-top:34px"><div class="sl" style="font-size:${sz}px">${hl(s.title)}</div>${s.text ? `<div class="ss">${para(s.text)}</div>` : ''}</div></div>`);
   }
   return frame(head());

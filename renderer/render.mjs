@@ -121,8 +121,8 @@ body{width:${W}px;height:${H}px;font-family:Inter,sans-serif;color:${c.white};ba
 .dim:after{background:linear-gradient(rgba(10,15,30,.55),rgba(10,15,30,.85))}
 .wrap{position:absolute;left:70px;right:70px}
 .tag{display:inline-block;font-weight:800;letter-spacing:.16em;font-size:24px;color:${c.ink};background:${c.gold};padding:8px 16px;border-radius:8px;text-transform:uppercase}
-h1,h2{font-family:var(--disp,'Archivo Black'),Inter,sans-serif;line-height:1.05;letter-spacing:-.01em}
-h1{font-size:92px}h2{font-size:68px}
+h1,h2{font-family:var(--disp,'Archivo Black'),Inter,sans-serif;line-height:1.12;letter-spacing:.012em;word-spacing:.04em}
+h1{font-size:114px}h2{font-size:90px}
 em{font-style:normal;color:${c.gold}}
 p{font-size:36px;line-height:1.35;color:#E7EBF5;margin-top:22px}
 ul{list-style:none;margin-top:26px;display:flex;flex-direction:column;gap:20px}
@@ -134,15 +134,15 @@ li:before{content:'';position:absolute;left:0;top:7px;width:26px;height:26px;bor
 .arrow{font-family:'Archivo Black';font-size:34px}
 .num{position:absolute;right:70px;top:56px;font-family:'Archivo Black';font-size:28px;color:#fff;background:rgba(10,15,30,.55);padding:6px 14px;border-radius:999px}
 .handle{position:absolute;left:70px;top:58px;font-size:25px;font-weight:800;color:#fff;background:rgba(10,15,30,.55);padding:6px 14px;border-radius:999px}
-.pill{display:inline-block;background:${c.orange};color:#fff;font-weight:800;font-size:46px;padding:24px 40px;border-radius:20px;margin-top:30px;box-shadow:0 10px 40px rgba(242,106,27,.45)}
+.pill{display:inline-block;background:${c.orange};color:#fff;font-weight:800;font-size:46px;padding:24px 40px;border-radius:20px;margin-top:30px;box-shadow:0 10px 40px rgba(255,90,0,.5)}
 .small{font-size:30px;color:#fff;opacity:.9;margin-top:22px}
 h1,h2{white-space:pre-line}
 mark{border-radius:.16em;padding:.02em .2em;-webkit-box-decoration-break:clone;box-decoration-break:clone;line-height:1.3}
-mark.y{background:#F5B82E;color:#0A0F1E}
-mark.p{background:#7C3AED;color:#fff}
-mark.o{background:#F26A1B;color:#fff}
+mark.y{background:#FFE600;color:#0A0F1E}
+mark.p{background:#8A2BFF;color:#fff}
+mark.o{background:#FF5A00;color:#fff}
 .ln{display:block;margin-top:14px}.ln:first-child{margin-top:0}.gap{display:block;height:18px}
-.pdf{position:absolute;right:64px;top:400px;width:400px;transform:rotate(3deg);border:11px solid #fff;border-radius:16px;box-shadow:0 0 0 5px rgba(245,184,46,.95),0 26px 70px rgba(0,0,0,.7);overflow:hidden;background:#fff}
+.pdf{position:absolute;right:64px;top:400px;width:400px;transform:rotate(3deg);border:11px solid #fff;border-radius:16px;box-shadow:0 0 0 5px rgba(255,230,0,.95),0 26px 70px rgba(0,0,0,.7);overflow:hidden;background:#fff}
 .pdf img{display:block;width:100%}
 .badge{position:absolute;z-index:5;right:40px;top:372px;transform:rotate(3deg);background:#F26A1B;color:#fff;font-weight:800;font-size:26px;letter-spacing:.12em;padding:10px 20px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
 `;
@@ -163,7 +163,7 @@ function slideHtml(s, i, total, handle, imgFile) {
       inner = `<div class="full dim" style="${fullBg}"></div>
       <div class="handle">${esc(handle)}</div><div class="num">${i + 1}/${total}</div>
       <div class="wrap" style="top:130px"><span class="tag">${esc(s.kicker || 'Free PDF')}</span>
-        <h1 style="margin-top:20px;font-size:68px;max-width:940px">${hl(s.title)}</h1></div>
+        <h1 style="margin-top:20px;font-size:84px;max-width:940px">${hl(s.title)}</h1></div>
       <div class="wrap" style="top:470px;left:70px;right:auto;width:480px">
         <div><span class="pill" style="font-size:38px;padding:20px 30px;margin-top:0">${esc(s.button)}</span></div>
         <p class="small" style="font-size:29px">${para(s.text || '')}</p>
@@ -174,7 +174,7 @@ function slideHtml(s, i, total, handle, imgFile) {
       inner = `<div class="full dim" style="${fullBg}"></div>
       <div class="handle">${esc(handle)}</div><div class="num">${i + 1}/${total}</div>
       <div class="wrap" style="top:0;bottom:0;display:flex;flex-direction:column;justify-content:center"><div><span class="tag">${esc(s.kicker || 'Free resource')}</span></div>
-      <h1 style="margin-top:22px;font-size:84px">${hl(s.title)}</h1>
+      <h1 style="margin-top:22px;font-size:100px">${hl(s.title)}</h1>
       <div><span class="pill">${esc(s.button)}</span></div>
       <p class="small">${para(s.text || '')}</p>
       <p class="small" style="margin-top:34px;color:${c.gold};font-weight:800">&#9733; Follow &nbsp;&bull;&nbsp; Save &nbsp;&bull;&nbsp; Share with an exporter friend</p></div>`;
@@ -183,8 +183,8 @@ function slideHtml(s, i, total, handle, imgFile) {
     inner = layoutHtml(s, i, total, handle);
   } else {
     let body = '';
-    if (s.type === 'stat') body = `<div class="big">${esc(s.stat)}</div><h2 style="font-size:56px;margin-top:6px">${hl(s.title)}</h2>${s.text ? `<p>${para(s.text)}</p>` : ''}`;
-    else if (s.type === 'list') body = `<h2 style="font-size:58px">${hl(s.title)}</h2><ul>${(s.items || []).map((t) => `<li>${hl(t)}</li>`).join('')}</ul>`;
+    if (s.type === 'stat') body = `<div class="big">${esc(s.stat)}</div><h2 style="font-size:74px;margin-top:6px">${hl(s.title)}</h2>${s.text ? `<p>${para(s.text)}</p>` : ''}`;
+    else if (s.type === 'list') body = `<h2 style="font-size:76px">${hl(s.title)}</h2><ul>${(s.items || []).map((t) => `<li>${hl(t)}</li>`).join('')}</ul>`;
     else body = `<h2>${hl(s.title)}</h2>${s.text ? `<p>${para(s.text)}</p>` : ''}`;
     inner = `<div class="photo${imgFile ? '' : ' nophoto'}" style="${imgFile ? `background-image:url(${bg})` : `--g:${GRAPHIC_BANDS[i % GRAPHIC_BANDS.length]}`}"></div>
       <div class="handle">${esc(handle)}</div><div class="num">${i + 1}/${total}</div>
@@ -268,7 +268,7 @@ for (let i = 0; i < spec.slides.length; i++) {
       const grow = (sel, min, step) => { for (const el of w.querySelectorAll(sel)) { const fs0 = parseFloat(getComputedStyle(el).fontSize); if (fs0 > min) el.style.setProperty('font-size', Math.max(min, fs0 * step) + 'px', 'important'); } };
       for (let it = 0; it < 30 && w.scrollHeight > w.clientHeight + 2; it++) {
         // phase 1: shrink the big number and headings first (keep body text readable); phase 2: body text, never below 30px
-        if (it < 14) { grow('.big', 100, 0.94); grow('h1,h2', 44, 0.95); } else { grow('p,li,.ln,.small', 30, 0.96); grow('h1,h2', 36, 0.95); }
+        if (it < 14) { grow('.big', 100, 0.94); grow('h1,h2', 66, 0.96); } else { grow('p,li,.ln,.small', 30, 0.96); grow('h1,h2', 54, 0.96); }
       }
     }
   });

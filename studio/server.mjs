@@ -14,6 +14,7 @@ import { plainCheck, plainHooksFor } from './plain.mjs';
 import { gemini } from './agents.mjs';
 import { feed, cleanupMedia } from './feeder.mjs';
 import { persist, pruneImages, squashHistory } from './cloud.mjs';
+import { addDirective } from './rules.mjs';
 const TICK = process.env.TICK === '1'; // cloud mode: one bounded run (GitHub Actions), no HTTP server, no timers
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -64,7 +65,7 @@ const ans = (cb, text) => BOTS[cb._who || 'main'].answerCallback(cb.id, text);
 // ---------- child process runner ----------
 let browserReady = !TICK;
 function ensureBrowser(script) { // cloud: install Chromium (and its system libraries) only when a script that renders is about to run
-  if (browserReady || !/render|results-image|make-from|restyle|mimic|reference|looks|leadmagnet|data-/.test(script)) return;
+  if (browserReady || !/render|results-image|results-table|make-from|restyle|mimic|reference|looks|leadmagnet|data-/.test(script)) return;
   const r = spawnSync('npx', ['playwright', 'install', '--with-deps', 'chromium'], { cwd: path.join(root, 'renderer'), encoding: 'utf8', timeout: 10 * 60e3 });
   log('chromium install exit', r.status); browserReady = true;
 }
@@ -149,7 +150,9 @@ async function runFeed(dryRun = false) {
 const HELP_MAIN = [
   'MAIN BOT COMMANDS',
   '/status - the last posts and when each goes live',
-  '/results - results chart for the main account',
+  '/results - colour results chart + last-5 table for the main account (nothing is sent automatically except one 24-hour text summary a day)',
+  '/table - only the last-5 posts table (views, likes, comments, shares, saves, follows)',
+  '/rules - the standing rules you have given me. Any plain message without a / is saved as a standing rule and used in every post from now on; name a post to edit it instead, e.g. "post 21 slide 2 make the title yellow"',
   '/run - write new posts now (normally automatic at 11:30)',
   '/learn - re-read all results and update what the system does next',
   '/hook 17 - 5 plain-English hook options for post #17 (tap one to put it on the cover and caption)',
@@ -261,7 +264,7 @@ async function onFixCommand(text, reply) {
 
 // /edit <post> [<slide>|all] <plain-English instruction>: colours, sizes, gaps, fonts, pills, photo and wording of a slide (owner request 2026-10-20: /look and /fix could not do this)
 const STYLE_KEYS = ['titleColor', 'bodyColor', 'accent', 'accent2', 'ink', 'tagText', 'pillColor', 'pillTextColor', 'titleSize', 'bodySize', 'lineGap', 'font', 'upper'];
-const EDIT_FONTS = ['Archivo Black', 'Inter', 'Bebas Neue', 'DM Serif Display', 'Anton', 'Rubik', 'Fraunces', 'Space Mono'];
+const EDIT_FONTS = ['Archivo Black', 'Poppins', 'Montserrat', 'Inter', 'Bebas Neue', 'DM Serif Display', 'Anton', 'Rubik', 'Fraunces', 'Space Mono'];
 const isHex = (v) => /^#[0-9a-f]{3,8}$/i.test(String(v || ''));
 async function editSlides(post, scope, instruction) {
   const specFile = path.join(post.dir, 'spec.json'); const spec = readJson(specFile, null);
@@ -403,10 +406,32 @@ async function onMessage(m, who = 'main') {
     });
     return reply(lines.join('\n') || 'No posts yet.');
   }
-  if (text === '/results') { bg(sendResults(who).catch((e) => reply('Could not build the results image: ' + e.message))); return reply('Building your results chart...'); }
+  if (text === '/results') { bg(sendResults(who).catch((e) => reply('Could not build the results image: ' + e.message))); return reply('Building the chart and the last-5 table...'); }
+  if (text === '/table') { bg(sendTable(who).catch((e) => reply('Could not build the table: ' + e.message))); return reply('Building the last-5 table...'); }
+  if (who === 'main' && /^\/rules\b/.test(text)) return onRulesCommand(text, reply);
   if (who === 'main' && text === '/learn') { bg(relearn(true).catch((e) => say('Learning failed: ' + e.message))); return reply('Re-analysing all results...'); }
   if (who === 'main' && text === '/run') { bg(dailyRun(2, { force: true }).catch((e) => say('Daily run failed: ' + e.message))); return reply('Starting a daily run. This takes several minutes.'); }
-  return reply(who === 'main' ? HELP_MAIN : 'Commands on this bot: /status (the queue of this account), /results (results chart). Everything else is on the main bot.');
+  if (who === 'main' && text && !text.startsWith('/')) return onFreeText(text, reply);
+  return reply(who === 'main' ? HELP_MAIN : 'Commands on this bot: /status (the queue of this account), /results (chart + last-5 table), /table (last-5 table). Everything else is on the main bot.');
+}
+
+// plain text from the owner: a post number makes it a design edit of that post, anything else becomes a standing rule that is injected into every writing prompt
+async function onFreeText(text, reply) {
+  if (text.length < 15 || /\?\s*$/.test(text)) return reply(HELP_MAIN);
+  const m = text.match(/(?:#|\bpost\s*(?:no\.?|number)?\s*|\bno\.?\s*)(\d{1,3})\b/i); const post = m && byNo(m[1]);
+  if (post) {
+    const sl = text.match(/\bslide\s*(\d+)\b/i);
+    await reply('Reading that as a design edit of post #' + post.no + (sl ? ' slide ' + sl[1] : ' (all slides)') + '. One moment...');
+    return onEditCommand('/edit ' + post.no + ' ' + (sl ? sl[1] : 'all') + ' ' + text, reply);
+  }
+  const n = addDirective(text);
+  return reply('Saved as standing rule #' + n + ' - I add it to every post I write from now on:\n"' + text.slice(0, 300) + '"\n\n/rules lists them, "/rules remove ' + n + '" deletes this one. Changes to one existing post: name it, e.g. "post 21 slide 2 make the title yellow".');
+}
+function onRulesCommand(text, reply) {
+  const f = path.join(dataDir, 'directives.json'); const d = readJson(f, []);
+  const rm = text.match(/^\/rules\s+(?:remove|delete)\s+(\d+)/i);
+  if (rm) { const i = Number(rm[1]) - 1; if (!d[i]) return reply('No rule number ' + rm[1] + '.'); const [gone] = d.splice(i, 1); fs.writeFileSync(f, JSON.stringify(d, null, 2)); dirty = true; return reply('Removed: "' + gone.text.slice(0, 120) + '"'); }
+  return reply(d.length ? 'Standing rules (used in every new post):\n' + d.map((x, i) => (i + 1) + '. ' + x.text).join('\n') + '\n\n"/rules remove N" deletes one.' : 'No standing rules yet. Send me any plain message (no /) and I will save it as one.');
 }
 
 async function pollLoop(who = 'main') {
@@ -544,11 +569,43 @@ async function runReferenceJob(jobDir, files, note, url) {
 }
 
 // ---------- results charts (image per account, sent by that account's bot) ----------
-async function sendResults(acct) {
-  const out = path.join(root, 'out', 'reports', 'results-' + acct + '-' + new Date().toISOString().slice(0, 10) + '.png');
-  const r = await run('../renderer/results-image.mjs', [acct, out], 3 * 60e3);
+const HANDLE = { main: '@faizanali.shahji', test: '@exportimportwithfaizan' };
+async function renderReport(script, acct, name) {
+  const out = path.join(root, 'out', 'reports', name + '-' + acct + '-' + new Date().toISOString().slice(0, 10) + '.png');
+  const r = await run('../renderer/' + script, [acct, out], 3 * 60e3);
   if (r.code !== 0) throw new Error(r.err.slice(-200));
-  await photoTo(acct, out, 'Results for @' + (acct === 'main' ? 'faizanali.shahji' : 'exportimportwithfaizan') + ' (the small picture is each post cover)');
+  return out;
+}
+// on request only (/results, /table): the colour chart and the last-5 table. Nothing here is sent automatically any more (owner, 2026-10-20).
+async function sendResults(acct, { table = true } = {}) {
+  const img = await renderReport('results-image.mjs', acct, 'results');
+  await photoTo(acct, img, 'Results for ' + HANDLE[acct] + '. Each post keeps one colour: its bar and its growth curve match.');
+  if (table) await sendTable(acct);
+}
+async function sendTable(acct) {
+  const img = await renderReport('results-table.mjs', acct, 'table');
+  await photoTo(acct, img, 'Last 5 posts of ' + HANDLE[acct] + ': first 24 hours (views, likes, comments, shares, saves, follows).');
+}
+
+// daily 24-hour digest as TEXT: one message per account, at most once per IST day (first sync after 09:00 IST that has a new 24h reading)
+const baselineViews = (acct) => { const m = readJson(path.join(dataDir, 'learning-model.json'), null); return ((m?.baseline || readJson(path.join(dataDir, 'learnings.json'), {}).baseline || {})[acct] || {}).views || 0; };
+if (!state.lastDigestAt) state.lastDigestAt = Date.now() - 30 * 3600e3; // first run: only 24h readings from the last 30 hours count as new
+const fresh24 = (acct) => state.posts.filter((p) => { const sn = p.metrics?.[acct]?.h24; return sn && new Date(sn.at).getTime() > (state.lastDigestAt || 0); }).sort((a, b) => a.no - b.no);
+const num = (v) => (v == null ? 'n/a' : Number(v).toLocaleString('en-IN'));
+function digestText(acct) {
+  const rows = fresh24(acct); if (!rows.length) return null;
+  const base = baselineViews(acct);
+  const body = rows.map((p) => {
+    const m = p.metrics[acct].h24; const vs = base ? ' (' + (m.views >= base ? '+' : '') + Math.round(((m.views - base) / base) * 100) + '% vs your normal)' : '';
+    return '#' + p.no + ' ' + String(p.hook || p.topic || '').replace(/\s+/g, ' ').slice(0, 70) + '\nViews ' + num(m.views) + vs + '\nLikes ' + num(m.likes) + ' | Comments ' + num(m.comments) + ' | Shares ' + num(m.shares) + ' | Saves ' + num(m.saves) + ' | Follows ' + num(m.follows);
+  }).join('\n\n');
+  return '24-HOUR RESULTS ' + HANDLE[acct] + ' (' + istDate() + ')\n\n' + body + '\n\nCharts and the last-5 table: send /results or /table';
+}
+const digestDue = () => state.lastDigestDate !== istDate() && istNow().getUTCHours() >= 9 && (fresh24('main').length || fresh24('test').length);
+async function sendDigest() {
+  for (const acct of ['main', 'test']) { const t = digestText(acct); if (t) await sendTo(acct, t); }
+  if (state.lastReport?.main) await say(state.lastReport.main); // learning report: kept, but only inside the daily digest
+  state.lastDigestAt = Date.now(); state.lastDigestDate = istDate(); save();
 }
 
 // ---------- learning loop ----------
@@ -556,8 +613,8 @@ async function relearn(announce, earlyOnly = false) {
   const r = await run('learn.mjs', [], 5 * 60e3);
   if (r.code !== 0) { log('learn failed:', r.err.slice(-200)); return { error: r.err.slice(-200) }; }
   const out = JSON.parse(r.out.trim().slice(r.out.indexOf('{')));
-  if (announce) { await say(out.report); if (out.reportTest) await sendTo('test', out.reportTest); for (const acct of ['main', 'test']) await sendResults(acct).catch((e) => log('results image failed:', e.message)); }
-  else if (earlyOnly && out.earlyNote && !out.earlyNote.startsWith('Early read not active')) await say(out.earlyNote);
+  state.lastReport = { main: out.report, at: new Date().toISOString() }; save();
+  if (announce) { await say(out.report); if (out.reportTest) await sendTo('test', out.reportTest); } // only a manual /learn announces now; the daily digest carries the report otherwise
   return { posts: out.posts, best: out.best };
 }
 
@@ -581,10 +638,11 @@ async function dataPosts(codes) {
 async function doInsightsSync() {
   const r = await syncInsights(state); save();
   try { fs.writeFileSync(path.join(dataDir, 'slot-model.json'), JSON.stringify(buildSlotModel(), null, 2)); } catch (e) { log('slot model failed:', e.message); }
-  for (const m of r.messages) await say(m);
+  // per-result messages are no longer sent (owner 2026-10-20: too frequent); the 24h numbers go out once a day as a text digest
   // learning loop: new 24h/72h/7d results -> re-learn -> directives for the next generation + bank ranking
   let learned = null;
-  if (r.updated > 0 || !fs.existsSync(path.join(dataDir, 'learning-model.json'))) learned = await relearn(r.decisive > 0, r.updated > 0 && !(r.decisive > 0)); // full report only for 24h/72h/7d results; h6-only updates send the short early read
+  if (r.updated > 0 || !fs.existsSync(path.join(dataDir, 'learning-model.json'))) learned = await relearn(false); // full report only for 24h/72h/7d results; h6-only updates send the short early read
+  if (digestDue()) await sendDigest().catch((e) => log('digest failed:', e.message));
   return { updated: r.updated, messages: r.messages.length, history: r.historyCount, baseline: r.baseline, learned };
 }
 
@@ -697,6 +755,13 @@ function catchUpDaily() {
   // bg(): in the cloud tick the process must wait for the run, else exit(0) kills it mid-render (drafts were lost 13-19 Oct)
   bg(dailyRun().catch((e) => { log('daily run error:', e.message); if (state.lastDailyRunDate === istDate() && !state.posts.some((p) => p.createdAt && p.createdAt.slice(0, 10) === new Date().toISOString().slice(0, 10))) { state.lastDailyRunDate = null; save(); } }));
 }
+const MENU_VERSION = 'v3-2026-10-20';
+function setMenus() {
+  const main = [['status', 'Latest posts and go-live times'], ['results', 'Colour results chart + last-5 table'], ['table', 'Last 5 posts: views, likes, comments, shares, saves, follows'], ['run', 'Write new posts now'], ['learn', 'Re-read results, update the plan'], ['hook', 'Plain-English hooks: /hook 17'], ['fresh', 'New hook + design: /fresh 17'], ['edit', 'Colours, sizes, pills, fonts, photo: /edit 21 2 ...'], ['fix', 'Rewrite a slide text: /fix 18 2 what you want'], ['look', 'Change design: /look 17'], ['looks', 'List the design looks'], ['rules', 'Your standing rules (any plain message adds one)'], ['ref', 'How to copy a competitor post'], ['help', 'All commands']].map(([command, description]) => ({ command, description }));
+  BOTS.main.setCommands(main).catch((e) => log('commands menu:', e.message));
+  if (BOTS.test.hasToken()) BOTS.test.setCommands([{ command: 'status', description: 'Queue of this account' }, { command: 'results', description: 'Colour chart + last-5 table' }, { command: 'table', description: 'Last 5 posts table' }]).catch(() => {});
+  state.cmdMenu = MENU_VERSION; save();
+}
 if (!TICK) {
 setInterval(catchUpDaily, 15 * 60e3);
 setTimeout(catchUpDaily, 90e3);
@@ -705,8 +770,7 @@ setInterval(goLiveWatcher, 5 * 60e3);
 setTimeout(() => { resetChecksOnStart(); goLiveWatcher(); }, 25e3);
 
 server.listen(PORT, '127.0.0.1', () => { log(`studio listening on http://127.0.0.1:${PORT}`); pollLoop('main'); pollLoop('test');
-  BOTS.main.setCommands([['status', 'Latest posts and go-live times'], ['results', 'Results chart for the main account'], ['run', 'Write new posts now'], ['learn', 'Re-read results, update the plan'], ['hook', 'Plain-English hooks: /hook 17'], ['fresh', 'New hook + design: /fresh 17'], ['edit', 'Colours, sizes, pills, fonts, photo: /edit 21 2 ...'], ['fix', 'Rewrite a slide text: /fix 18 2 what you want'], ['look', 'Change design: /look 17'], ['looks', 'List the design looks'], ['ref', 'How to copy a competitor post'], ['help', 'All commands']].map(([command, description]) => ({ command, description }))).catch((e) => log('commands menu:', e.message));
-  if (BOTS.test.hasToken()) BOTS.test.setCommands([{ command: 'status', description: 'Queue of this account' }, { command: 'results', description: 'Results chart' }]).catch(() => {});
+  setMenus();
 });
 }
 
@@ -741,6 +805,7 @@ function flushReference() {
 async function runTick() {
   const deadline = Date.now() + Number(process.env.TICK_SECONDS || 270) * 1000;
   log('cloud run started; paired chats:', Object.keys(state.chats).join(',') || 'none');
+  if (state.cmdMenu !== MENU_VERSION) setMenus(); // register the Telegram / menu once per version (the cloud never did, so /edit was missing)
   resetChecksOnStart();
   const noSched = process.env.TICK_SKIP_SCHEDULE === '1'; // local test: no scheduled jobs
   if (!noSched && dueNow(FEED_AT, 'feed')) bg(runFeed().then((o) => log('feed done, queued: ' + (o.fed || []).length)).catch((e) => log('feed error:', e.message)));

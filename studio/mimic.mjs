@@ -10,7 +10,7 @@ const [dir, styleFile] = process.argv.slice(2);
 if (!dir || !styleFile) { console.error('usage: node mimic.mjs <postDir> <style.json>'); process.exit(1); }
 const style = JSON.parse(fs.readFileSync(styleFile, 'utf8'));
 const d = style.design || {};
-const FONTS = ['Archivo Black', 'Bebas Neue', 'DM Serif Display', 'Anton', 'Rubik', 'Fraunces', 'Inter'];
+const FONTS = ['Archivo Black', 'Poppins', 'Montserrat', 'DM Serif Display', 'Rubik', 'Fraunces', 'Inter'];
 const THEMES = ['dark', 'light', 'gold', 'purple', 'amber', 'monored', 'mint', 'cream', 'lime'];
 const hexOk = (h) => /^#[0-9a-f]{6}$/i.test(String(h || ''));
 const lum = (h) => { const n = parseInt(h.slice(1), 16); const [r, g, b] = [n >> 16, (n >> 8) & 255, n & 255].map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };

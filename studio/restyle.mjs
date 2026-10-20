@@ -8,6 +8,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { gemini, PHOTO_VOCAB } from './agents.mjs';
 import { renderLeadMagnet } from './leadmagnet.mjs';
+import { directivesBlock } from './rules.mjs';
 
 const dir = process.argv[2];
 if (!dir) { console.error('usage: node restyle.mjs <postDir> [--hook "..."] [--sub "..."]'); process.exit(1); }
@@ -34,14 +35,15 @@ const oldNums = nums(oldText);
 const RISKY = /\b(penalt\w*|fines?|fined|ban(ned)?|jail|punish\w*|illegal|fraud\w*|scam\w*|lawsuit|sue[ds]?|seiz\w*|blacklist\w*|guarantee[ds]?)\b/gi;
 const oldRisky = new Set((oldText.match(RISKY) || []).map((x) => x.toLowerCase()));
 
-const prompt = `You are the final editor for an Instagram carousel (@faizanali.shahji, Indian import-export education). Rewrite this post in the owner's approved "V2" style.
+const prompt = `${directivesBlock()}
+You are the final editor for an Instagram carousel (@faizanali.shahji, Indian import-export education). Rewrite this post in the owner's approved "V2" style.
 HARD RULES:
 1. NEVER change or add facts or claims. Keep every number, amount, deadline, scheme name, paragraph reference, notification number and website exactly. Do NOT introduce any new number, and do NOT add any new claim about consequences (no penalties, fines, bans, guarantees, legal action) unless the original already says it. If unsure, keep the original wording. Do NOT add examples, products, countries, companies or scenarios that are not already in the original; do not turn a rule that depends on value or conditions into a product list.
 2. EASY ENGLISH: short sentences (max 12 words), everyday words, active voice, explain jargon in plain words the first time (e.g. "AD Bank (your bank that handles foreign payments)"). Write for a first-time exporter.
-3. COVER HOOK (most important): max 12 words. It MUST contain the single most important number/time/amount from the post AND a clear stake or surprise that is already in the post, in a direct, spoken style. Good patterns: "You have only ==9 months== to get paid." / "Ship up to ==Rs 3 lakh== with ++no RCMC++." Never a vague topic line like "Save money on your first order". ${KEEP_HOOK ? `KEEP this exact hook text (only add markup/line breaks): "${KEEP_HOOK}".` : ''} Cover "sub": max 12 words, plain. ${KEEP_SUB ? `KEEP this exact sub: "${KEEP_SUB}".` : ''} No lead-magnet pitch on the cover.
-4. Titles max 7 words. Put each point of "text" on its OWN line using \\n (max 10 words per line); use a blank line (\\n\\n) between groups.
+3. COVER HOOK (most important): max 12 words. It MUST contain the single most important number/time/amount from the post AND a clear stake or surprise that is already in the post, in a direct, spoken style. Good patterns: "You have only ==9 months== to get paid." / "Ship up to ==Rs 3 lakh== with ++no RCMC++." Never a vague topic line like "Save money on your first order". ${KEEP_HOOK ? `KEEP this exact hook text (only add markup/line breaks): "${KEEP_HOOK}".` : ''} Cover "sub": one or two complete plain sentences (18-30 words) that say what the reader gains or loses; never just a few words. ${KEEP_SUB ? `KEEP this exact sub: "${KEEP_SUB}".` : ''} No lead-magnet pitch on the cover.
+4. Titles max 8 words. The "text" of every content slide = one or two COMPLETE descriptive plain sentences (14-30 words in total, never a 2-3 word fragment); put a second sentence on its own line using \\n.
 5. HIGHLIGHT MARKUP: ==x== yellow highlight (numbers, amounts, deadlines, key nouns), ++x++ purple highlight (key action words), !!x!! orange (ONLY for the word "Mistake:"). Use AT MOST 2 highlights per slide, each covering 1-4 consecutive words (never two highlights side by side, never whole sentences). The "stat" field must be plain text with NO markup.
-6. If a slide has a mistake and a fix, format text exactly as: "!!Mistake:!!\\n<one line>\\n\\n++Fix:++\\n<one or two lines>".
+6. Never ADD a Mistake/Fix slide (the owner allows that format only once a week and the writer already decided). If the original slide already has a mistake and a fix, format its text exactly as: "!!Mistake:!!\\n<one line>\\n\\n++Fix:++\\n<one or two lines>".
 7. Keep the same number of slides and slide types. Teasers max 6 words, simple. The last slide stays type "cta": title "Get the ++<guide name>++" (max 5 words, must fit on two lines) where the guide name is a short form of the PDF title "${lm.title}", button "Comment ${KEYWORD}", text "Inside:\\n<item 1>\\n<item 2>\\n<item 3>" (3 short items, NO highlight markup in this text, that match the PDF sections: ${JSON.stringify((lm.sections || []).map((s) => s.heading))}).
 8. imageQueries: for every slide give 2 options chosen verbatim from: ${PHOTO_VOCAB.join(' | ')} . Pick scenes that fit the slide.
 9. CAPTION: easy English. Line 1 = the cover hook as plain text. Then 2-3 short lines using only facts from the original. Then: "Comment ${KEYWORD} and I'll DM you the <guide name>. Follow so the DM reaches you." Then a blank line and EXACTLY 5 hashtags. Plain text, no asterisks, no emoji.

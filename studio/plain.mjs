@@ -32,7 +32,7 @@ CURRENT HOOK (too hard to read, replace it): ${current}
 WHAT THE POST SAYS (use only facts from here, never invent a number): ${JSON.stringify(facts).slice(0, 2500)}
 ${PLAIN_RULES}
 Each option uses a different angle: (1) money you can lose or earn, with a number from the post, (2) a plain question the reader is asking, (3) a "do not do X before Y" warning, (4) "how to ..." for the named product/market, (5) a plain surprising fact with a number from the post.
-For each also write "sub": one plain line (max 12 words) that makes the reader want to swipe.
+For each also write "sub": one or two complete plain sentences (18-30 words) that say what the reader gains or loses and make them want to swipe. Never just a few words.
 Return JSON: {"options":[{"hook":"","sub":"","angle":""}]}`);
   const list = Array.isArray(out) ? out : (out.options || Object.values(out).find(Array.isArray) || []);
   const good = list.filter((o) => o?.hook && plainCheck(o.hook).ok);
