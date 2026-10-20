@@ -67,14 +67,22 @@ const ans = (cb, text) => BOTS[cb._who || 'main'].answerCallback(cb.id, text);
 
 // ---------- child process runner ----------
 let browserReady = !TICK;
-function ensureBrowser(script) { // cloud: install Chromium (and its system libraries) only when a script that renders is about to run
-  if (browserReady || !/render|results-image|results-table|make-from|restyle|mimic|reference|looks|leadmagnet|data-/.test(script)) return;
-  const r = spawnSync('npx', ['playwright', 'install', '--with-deps', 'chromium'], { cwd: path.join(root, 'renderer'), encoding: 'utf8', timeout: 10 * 60e3 });
-  log('chromium install exit', r.status); browserReady = true;
+let browserP = null;
+function startBrowserInstall() { // cloud: every run starts on a fresh machine; install Chromium in the background at run start so /results, /edit and reference jobs do not wait ~3 min (and the bot keeps polling meanwhile)
+  browserP ||= new Promise((resolve) => {
+    const p = spawn('npx', ['playwright', 'install', '--with-deps', 'chromium'], { cwd: path.join(root, 'renderer'), stdio: 'ignore' });
+    const done = (code) => { log('chromium install exit', code); browserReady = true; resolve(); };
+    p.on('close', done); p.on('error', () => done('error'));
+  });
+  return browserP;
 }
-function run(script, args = [], timeoutMs = 15 * 60e3) {
+async function ensureBrowser(script) { // wait for the install only when a script that renders is about to run
+  if (browserReady || !/render|results-image|results-table|make-from|restyle|mimic|reference|looks|leadmagnet|data-/.test(script)) return;
+  await startBrowserInstall();
+}
+async function run(script, args = [], timeoutMs = 15 * 60e3) {
+  await ensureBrowser(script);
   return new Promise((resolve) => {
-    ensureBrowser(script);
     const p = spawn(process.execPath, [path.join(here, script), ...args], { cwd: here });
     let out = '', err = '';
     const t = setTimeout(() => p.kill(), timeoutMs);
@@ -152,38 +160,30 @@ async function runFeed(dryRun = false) {
 // ---------- commands: help, /look, /hook ----------
 const HELP_MAIN = [
   'MAIN BOT COMMANDS',
-  '/status - the last posts and when each goes live',
-  '/results - colour results chart + last-5 table for the main account (nothing is sent automatically except one 24-hour text summary a day)',
-  '/table - only the last-5 posts table (views, likes, comments, shares, saves, follows)',
+  '/status - only the posts scheduled from today onwards, with go-live times (past posts are not listed)',
+  '/results - colour results chart + last-5 table (nothing is sent automatically except one 24-hour text summary a day)',
   '/rules - the standing rules you have given me. Any plain message without a / is saved as a standing rule and used in every post from now on; name a post to edit it instead, e.g. "post 21 slide 2 make the title yellow"',
   '/run - write new posts now (normally automatic at 11:30)',
   '/learn - re-read all results and update what the system does next',
   '/hook 17 - 5 plain-English hook options for post #17 (tap one to put it on the cover and caption)',
-  '/fix 18 2 <what you want> - rewrite the TEXT of slide 2 of post #18, e.g. /fix 18 2 Mistake is shipping on 100% DP to a new buyer, Fix is taking part advance. (Swap img only changes the photo.)',
   '/fresh 17 - new plain hook AND new design for post #17 in one go',
-  '/edit 21 2 make the title yellow and bigger - colours, sizes, line gap, fonts, pills, photo, wording of one slide (or "all"); send /edit alone for examples',
-  '/look 17 - change post #17 to the next design look; /look 17 red-news picks one; /looks lists them',
-  '/ref - how to copy a competitor post',
+  '/edit 21 2 make the title yellow and bigger - the one command to change a post: wording, colours, sizes, line gaps, fonts, pills and photo of one slide (or "all" slides)',
+  '/ref - step-by-step: how to copy a competitor post',
   '',
   'COPY A COMPETITOR POST: select ALL its slides as screenshots and send them together in one message (a note in the caption is optional, e.g. "keep it shorter"). I read its hook, structure, caption style, colours and font and send back a NEW post in the same style with one better tweak: slides, caption and PDF. Approve it and it goes to the front of the queue. An Instagram link alone cannot be read by any tool, so the screenshots are needed.',
   '',
   'The test bot (@exportimportwithfaizan) only has /status and /results.',
 ].join('\n');
 
-async function onLookCommand(text, reply) {
-  const [, no, name] = text.split(/\s+/);
-  if (no && name && !LOOKS[name] && /^\d+$/.test(no) && byNo(no)) return onEditCommand('/edit ' + text.replace(/^\/look\s+/i, ''), reply); // free-form request typed after /look
-  const post = byNo(no); if (!post) return reply('Usage: /look 17  or  /look 17 red-news  (see /looks)\n\nTo change colours, sizes, fonts, pills or the photo of a slide use /edit - send /edit for examples.');
-  if ((post.buffer || []).length) return reply('#' + post.no + ' is already in Buffer, so its slides cannot change here.');
-  const cur = lookOf(post);
-  const pick = name || pickLook([...state.posts.filter((p) => p.no !== post.no), { ...post, look: cur }]);
-  if (!LOOKS[pick]) return reply('Unknown look. Choose one of: ' + Object.keys(LOOKS).join(', '));
-  await reply('Changing #' + post.no + ' to the "' + pick + '" look (about a minute)...');
-  const r = await run('looks.mjs', ['apply', post.dir, pick], 10 * 60e3);
-  if (r.code !== 0) return reply('Look failed: ' + r.err.slice(-200));
-  post.look = pick; save();
-  await sendPreview(post);
-}
+const REF_HELP = [
+  'HOW TO COPY A COMPETITOR POST (/ref)',
+  '1. Open the post on Instagram and screenshot EVERY slide, in order (cover first). Max 10 slides.',
+  '2. Send all the screenshots to this bot together in ONE message (select them all in the gallery, then send). A note in the caption of the first one is optional, e.g. "keep it shorter" or "make it about rice".',
+  '3. Wait 5-10 minutes. I read its hook, structure, caption style, colours and font, then send back a NEW post: fresh wording and images, one better tweak, a caption and a PDF lead magnet.',
+  '4. Tap Approve and it goes to the front of the queue.',
+  '',
+  'An Instagram link alone cannot be read (login wall), so screenshots are needed. One reference at a time.',
+].join('\n');
 
 const hlNum = (t) => (/==/.test(t) ? t : t.replace(/(\bRs\.?\s?\d[\d,.]*(?:\s?(?:lakh|crore|k|L|Cr)\b)?|\b\d[\d,.]*\s?%|\b\d+\s(?:days|weeks|months|years|hours|things|steps|mistakes|documents)\b)/i, '==$1=='));
 async function onHookCommand(text, reply) {
@@ -255,17 +255,9 @@ Return JSON: {"title":"","text":"","items":[],"teaser":""} (teaser max 6 words; 
   await tg.sendPhoto(state.chatId, path.join(post.dir, 'slide_' + String(slideNo).padStart(2, '0') + '.jpg'), '#' + post.no + ' slide ' + slideNo + ' rewritten', { inline_keyboard: [[{ text: 'Approve', callback_data: 'a:' + post.no }]] });
   return { no: post.no, slide: slideNo, title: out.title, text: out.text };
 }
-async function onFixCommand(text, reply) {
-  const m = text.match(/^\/fix\s+(\d+)\s+(\d+)\s+([\s\S]+)/); const post = m && byNo(m[1]);
-  if (!m && /^\/fix\s+\d+\s+\D/i.test(text)) return onEditCommand('/edit ' + text.replace(/^\/fix\s+/i, ''), reply); // no slide number: treat as an edit of the whole post
-  if (!m || !post) return reply('For colours, sizes, gaps, fonts, pills or photos use /edit (send /edit for examples).\n\nUsage: /fix 18 2 what you want on that slide\nExample: /fix 18 2 Mistake: shipping on 100% DP to a new buyer. Fix: take part payment in advance.');
-  if ((post.buffer || []).length) return reply('#' + post.no + ' is already in Buffer, so its slides cannot change here.');
-  await reply('Rewriting slide ' + m[2] + ' of #' + post.no + '...');
-  return fixSlide(post, Number(m[2]), m[3].trim()).catch((e) => reply('Could not rewrite: ' + e.message));
-}
 
 
-// /edit <post> [<slide>|all] <plain-English instruction>: colours, sizes, gaps, fonts, pills, photo and wording of a slide (owner request 2026-10-20: /look and /fix could not do this)
+// /edit <post> [<slide>|all] <plain-English instruction>: colours, sizes, gaps, fonts, pills, photo and wording of a slide (owner request 2026-10-21: /edit is the only edit command; /fix, /look and /looks were removed)
 const STYLE_KEYS = ['titleColor', 'bodyColor', 'accent', 'accent2', 'ink', 'tagText', 'pillColor', 'pillTextColor', 'titleSize', 'bodySize', 'lineGap', 'font', 'upper'];
 const EDIT_FONTS = ['Archivo Black', 'Poppins', 'Montserrat', 'Inter', 'Bebas Neue', 'DM Serif Display', 'Anton', 'Rubik', 'Fraunces', 'Space Mono'];
 const isHex = (v) => /^#[0-9a-f]{3,8}$/i.test(String(v || ''));
@@ -323,7 +315,7 @@ async function onEditCommand(text, reply) {
   await reply('Changing ' + (scope === 'all' ? 'all slides' : 'slide ' + scope) + ' of #' + post.no + ' (about a minute)...');
   return editSlides(post, scope, m[3].trim()).catch((e) => reply('Could not edit: ' + e.message));
 }
-const EDIT_HELP = 'Design edits, in your own words:\n/edit <post> <slide> <what you want>\n/edit <post> all <what you want>  (every slide)\n\nExamples:\n/edit 21 2 make the title yellow and bigger, more gap between lines\n/edit 21 3 put the words 25 lakh in a pill button\n/edit 21 all use the Bebas Neue font, body text size 44\n/edit 21 4 change the photo to a container ship at a port\n/edit 21 2 reset (undo my styling)\n\nColours, text size, line gap, fonts, pills, photo and wording all work. /look 21 only changes the whole design preset; /fix 21 2 <text> only rewrites the words. Post number = the # in the preview, slide number = the slide in the album.';
+const EDIT_HELP = 'Usage: /edit <post> <slide or all> <what you want>\nExample: /edit 21 2 make the title yellow and bigger. Post number = the # in the preview.';
 
 // ---------- handlers ----------
 async function onApprove(post, cb) {
@@ -394,29 +386,30 @@ async function onMessage(m, who = 'main') {
   }
   if (who === 'main' && (m.photo || (m.document && /^image\//.test(m.document.mime_type || '')))) return collectReference(m);
   if (who === 'main' && /https?:\/\/\S+/.test(text)) return onReferenceLink(text.match(/https?:\/\/\S+/)[0], reply);
-  if (who === 'main' && (text === '/ref' || text === '/help')) return reply(HELP_MAIN);
-  if (who === 'main' && /^\/looks\b/.test(text)) return reply('Design looks (each new post rotates to a look not used in the last 4 posts):\n' + Object.entries(LOOKS).map(([k, v]) => '- ' + k + ': ' + v.label).join('\n') + '\n\nChange one post: /look 17 (next look in the rotation) or /look 17 red-news');
+  if (who === 'main' && text === '/ref') return reply(REF_HELP);
+  if (who === 'main' && text === '/help') return reply(HELP_MAIN);
   if (who === 'main' && /^\/edit\b/.test(text)) return onEditCommand(text, reply);
-  if (who === 'main' && /^\/fix\b/.test(text)) return onFixCommand(text, reply);
   if (who === 'main' && /^\/fresh\b/.test(text)) { const p = byNo(text.split(/\s+/)[1]); if (!p) return reply('Usage: /fresh 17 (new plain hook + new design for post #17)'); reply('Refreshing #' + p.no + ' (hook + design), about 2 minutes...'); return refreshPost(p).catch((e) => reply('Refresh failed: ' + e.message)); }
-  if (who === 'main' && /^\/look\b/.test(text)) return onLookCommand(text, reply);
   if (who === 'main' && /^\/hook\b/.test(text)) return onHookCommand(text, reply);
   if (text === '/status') {
     const acct = who;
-    const lines = state.posts.slice(-8).map((p) => {
+    const fmt = (d) => new Date(d).toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }) + ' IST';
+    const startToday = new Date(istDate() + 'T00:00:00+05:30').getTime(); // midnight IST today: earlier posts are history, not queue
+    const rows = state.posts.map((p) => {
       const e = (p.buffer || []).find((x) => String(x.account).startsWith(acct));
-      const when = e?.dueAt || (who === 'main' ? p.dueAt : null);
-      return `#${p.no} [${p.status}] ${p.topic}${when ? ' | ' + new Date(when).toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }) + ' IST' : ''}`;
-    });
-    return reply(lines.join('\n') || 'No posts yet.');
+      const when = e?.dueAt || (who === 'main' && !(p.buffer || []).length ? p.dueAt : null);
+      return { p, when: when ? new Date(when).getTime() : null };
+    }).filter((r) => r.p.status === 'scheduled' && r.when && r.when >= startToday).sort((x, y) => x.when - y.when);
+    const bank = who === 'main' ? state.posts.filter((p) => p.status === 'approved' && !(p.buffer || []).length).map((p) => '#' + p.no) : [];
+    const head = rows.length ? 'SCHEDULED from today (' + rows.length + '), earliest first:\n' + rows.map((r) => '#' + r.p.no + ' ' + r.p.topic + ' | ' + fmt(r.when)).join('\n') : 'Nothing is scheduled from today onwards.';
+    return reply(head + (bank.length ? '\n\nApproved, waiting for a free slot: ' + bank.join(', ') : ''));
   }
   if (text === '/results') { bg(sendResults(who).catch((e) => reply('Could not build the results image: ' + e.message))); return reply('Building the chart and the last-5 table...'); }
-  if (text === '/table') { bg(sendTable(who).catch((e) => reply('Could not build the table: ' + e.message))); return reply('Building the last-5 table...'); }
   if (who === 'main' && /^\/rules\b/.test(text)) return onRulesCommand(text, reply);
   if (who === 'main' && text === '/learn') { bg(relearn(true).catch((e) => say('Learning failed: ' + e.message))); return reply('Re-analysing all results...'); }
   if (who === 'main' && text === '/run') { bg(dailyRun(2, { force: true }).catch((e) => say('Daily run failed: ' + e.message))); return reply('Starting a daily run. This takes several minutes.'); }
   if (who === 'main' && text && !text.startsWith('/')) return onFreeText(text, reply);
-  return reply(who === 'main' ? HELP_MAIN : 'Commands on this bot: /status (the queue of this account), /results (chart + last-5 table), /table (last-5 table). Everything else is on the main bot.');
+  return reply(who === 'main' ? HELP_MAIN : 'Commands on this bot: /status (the queue of this account), /results (chart + last-5 table). Everything else is on the main bot.');
 }
 
 // plain text from the owner: a post number makes it a design edit of that post, anything else becomes a standing rule that is injected into every writing prompt
@@ -571,7 +564,10 @@ async function runReferenceJob(jobDir, files, note, url) {
     fs.writeFileSync(path.join(jobDir, 'meta.json'), JSON.stringify({ files, note, caption: note, url }, null, 2));
     await say('Got ' + files.length + ' slide(s). Reading the hook, structure, caption style, colours and font, then writing our version with caption and PDF. About 5-10 minutes.');
     const r = await run('reference.mjs', [jobDir], 30 * 60e3);
-    if (r.code !== 0) throw new Error(r.err.split('\n').filter(Boolean).slice(-3).join(' | ').slice(0, 400));
+    if (r.code !== 0) {
+      if (/quota/i.test(r.err)) throw new Error('Gemini free quota is used up for today on every model (it resets about 12:30 IST). Send the same screenshots again after that and the build will run.');
+      throw new Error(r.err.split('\n').filter((l) => l && !/^\s+at |^Node\.js v/.test(l)).slice(-3).join(' | ').slice(0, 400));
+    }
     const info = JSON.parse(r.out.trim().slice(r.out.indexOf('{')));
     const post = { no: ++state.seq, id: info.id, dir: info.outDir, topic: info.title, hook: info.hook, keyword: info.keyword, leadmagnet: path.basename(info.pdf || ''), status: 'awaiting_approval', kind: 'reference', look: 'reference', boost: true, reference: { url, pattern: info.pattern, tweak: info.tweak }, createdAt: new Date().toISOString() };
     state.posts.push(post); save();
@@ -618,7 +614,7 @@ function digestText(acct) {
     const m = p.metrics[acct].h24; const vs = base ? ' (' + (m.views >= base ? '+' : '') + Math.round(((m.views - base) / base) * 100) + '% vs your normal)' : '';
     return '#' + p.no + ' ' + String(p.hook || p.topic || '').replace(/\s+/g, ' ').slice(0, 70) + '\nViews ' + num(m.views) + vs + '\nLikes ' + num(m.likes) + ' | Comments ' + num(m.comments) + ' | Shares ' + num(m.shares) + ' | Saves ' + num(m.saves) + ' | Follows ' + num(m.follows);
   }).join('\n\n');
-  return '24-HOUR RESULTS ' + HANDLE[acct] + ' (' + istDate() + ')\n\n' + body + '\n\nCharts and the last-5 table: send /results or /table';
+  return '24-HOUR RESULTS ' + HANDLE[acct] + ' (' + istDate() + ')\n\n' + body + '\n\nChart and the last-5 table: send /results';
 }
 const digestDue = () => state.lastDigestDate !== istDate() && istNow().getUTCHours() >= 9 && (fresh24('main').length || fresh24('test').length);
 async function sendDigest() {
@@ -678,7 +674,6 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && req.url === '/insights-sync') return send(200, await doInsightsSync());
     if (req.method === 'POST' && req.url.startsWith('/refresh/')) { const nos = req.url.split('/')[2].split(','); const outc = []; for (const n of nos) { const p = byNo(n); if (!p) { outc.push({ no: n, error: 'no such post' }); continue; } try { outc.push(await refreshPost(p)); } catch (e) { outc.push({ no: n, error: e.message }); } } return send(200, outc); }
     if (req.method === 'POST' && req.url.startsWith('/fix/')) { const u = new URL(req.url, 'http://x'); const [, , no, sl] = u.pathname.split('/'); const p = byNo(no); if (!p) return send(404, { error: 'no such post' }); return send(200, await fixSlide(p, Number(sl), u.searchParams.get('i') || '').catch((e) => ({ error: e.message }))); }
-    if (req.method === 'POST' && req.url.startsWith('/look/')) { const [, , no, name] = req.url.split('/'); const msgs = []; await onLookCommand('/look ' + no + ' ' + (name || ''), async (t) => { msgs.push(t); }); return send(200, msgs); }
     if (req.method === 'POST' && req.url === '/learn') { const out = await relearn(true); return send(200, out); }
     if (req.method === 'POST' && req.url.startsWith('/results')) { const acct = new URL(req.url, 'http://x').searchParams.get('acct') || 'main'; await sendResults(acct); return send(200, { sent: acct }); }
     if (req.method === 'POST' && req.url === '/learn-quiet') { const out = await relearn(false); return send(200, out); }
@@ -774,11 +769,11 @@ function catchUpDaily() {
   // bg(): in the cloud tick the process must wait for the run, else exit(0) kills it mid-render (drafts were lost 13-19 Oct)
   bg(dailyRun().catch((e) => { log('daily run error:', e.message); if (state.lastDailyRunDate === istDate() && !state.posts.some((p) => p.createdAt && p.createdAt.slice(0, 10) === new Date().toISOString().slice(0, 10))) { state.lastDailyRunDate = null; save(); } }));
 }
-const MENU_VERSION = 'v4-2026-10-20-fb';
+const MENU_VERSION = 'v5-2026-10-21-cleanup';
 function setMenus() {
-  const main = [['status', 'Latest posts and go-live times'], ['results', 'Colour results chart + last-5 table'], ['table', 'Last 5 posts: views, likes, comments, shares, saves, follows'], ['run', 'Write new posts now'], ['learn', 'Re-read results, update the plan'], ['hook', 'Plain-English hooks: /hook 17'], ['fresh', 'New hook + design: /fresh 17'], ['edit', 'Colours, sizes, pills, fonts, photo: /edit 21 2 ...'], ['fix', 'Rewrite a slide text: /fix 18 2 what you want'], ['look', 'Change design: /look 17'], ['looks', 'List the design looks'], ['rules', 'Your standing rules (any plain message adds one)'], ['ref', 'How to copy a competitor post'], ['help', 'All commands']].map(([command, description]) => ({ command, description }));
+  const main = [['status', 'Scheduled posts from today onwards'], ['results', 'Colour results chart + last-5 table'], ['run', 'Write new posts now'], ['learn', 'Re-read results, update the plan'], ['hook', 'Plain-English hooks: /hook 17'], ['fresh', 'New hook + design: /fresh 17'], ['edit', 'Change a slide: wording, colours, photo: /edit 21 2 ...'], ['rules', 'Your standing rules (any plain message adds one)'], ['ref', 'How to copy a competitor post'], ['help', 'All commands']].map(([command, description]) => ({ command, description }));
   BOTS.main.setCommands(main).catch((e) => log('commands menu:', e.message));
-  if (BOTS.test.hasToken()) BOTS.test.setCommands([{ command: 'status', description: 'Queue of this account' }, { command: 'results', description: 'Colour chart + last-5 table' }, { command: 'table', description: 'Last 5 posts table' }]).catch(() => {});
+  if (BOTS.test.hasToken()) BOTS.test.setCommands([{ command: 'status', description: 'Queue of this account' }, { command: 'results', description: 'Colour chart + last-5 table' }]).catch(() => {});
   if (BOTS.fb.hasToken()) BOTS.fb.setCommands([{ command: 'status', description: 'Facebook queue' }, { command: 'caption', description: 'Show a post Facebook caption: /caption 21' }, { command: 'fbedit', description: 'Change it: /fbedit 21 new caption' }, { command: 'help', description: 'How it works' }]).catch(() => {});
   state.cmdMenu = MENU_VERSION; save();
 }
@@ -827,6 +822,7 @@ async function runTick() {
   log('cloud run started; paired chats:', Object.keys(state.chats).join(',') || 'none');
   if (state.cmdMenu !== MENU_VERSION) setMenus(); // register the Telegram / menu once per version (the cloud never did, so /edit was missing)
   resetChecksOnStart();
+  if (!browserReady) startBrowserInstall();
   const noSched = process.env.TICK_SKIP_SCHEDULE === '1'; // local test: no scheduled jobs
   if (!noSched && dueNow(FEED_AT, 'feed')) bg(runFeed().then((o) => log('feed done, queued: ' + (o.fed || []).length)).catch((e) => log('feed error:', e.message)));
   if (!noSched && dueNow(SYNC_AT, 'sync')) bg(doInsightsSync().then((o) => log('sync done, updated: ' + o.updated)).catch((e) => log('sync error:', e.message)));
