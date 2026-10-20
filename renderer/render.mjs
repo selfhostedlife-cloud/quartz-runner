@@ -148,7 +148,16 @@ mark.o{background:#FF5A00;color:#fff}
 .badge{position:absolute;z-index:5;right:40px;top:372px;transform:rotate(3deg);background:#F26A1B;color:#fff;font-weight:800;font-size:26px;letter-spacing:.12em;padding:10px 20px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
 `;
 
+// owner (2026-10-21): the profile avatar sits on the last (CTA) slide of every post, whatever the template
+// the file lives in the PRIVATE data repo (studio/data/avatar.png; the runner repo is public); brand/avatar.png is a local-only fallback
+const AVATAR = (() => { for (const f of [path.join(root, 'studio', 'data', 'avatar.png'), path.join(root, 'brand', 'avatar.png')]) { try { return dataUri(f); } catch { /* try next */ } } return ''; })();
 function slideHtml(s, i, total, handle, imgFile) {
+  const h = slideHtmlBase(s, i, total, handle, imgFile);
+  if (s.type !== 'cta' || !AVATAR) return h;
+  // the PNG has an opaque white square around the ring: crop it to the ring's circle (ring centre 284,270 of 578x537; scaled to 206px wide)
+  return h.replace('</body>', `<div style="position:absolute;z-index:30;right:30px;top:30px;width:170px;height:170px;border-radius:50%;background:url(${AVATAR}) -16px -11px/206px auto no-repeat;box-shadow:0 6px 22px rgba(0,0,0,.55)"></div></body>`);
+}
+function slideHtmlBase(s, i, total, handle, imgFile) {
   if (globalThis.TEMPLATE && !s.layout) { // owner's winning templates (winner.mjs): black, literal hero photo, huge text, save/share footer
     const pf = s.pdfPreview ? path.resolve(globalThis.SPEC_DIR || '.', s.pdfPreview) : null;
     return winnerHtml(globalThis.TEMPLATE, s, i, total, handle, imgFile ? dataUri(imgFile) : '', pf && fs.existsSync(pf) ? dataUri(pf) : '');

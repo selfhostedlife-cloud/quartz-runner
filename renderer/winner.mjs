@@ -49,7 +49,7 @@ b.hl{color:${accent};font-weight:inherit}
     const kw = String(s.button || '').replace(/comment/i, '').trim().replace(/^["“]|["”]$/g, '');
     const inside = lines(s.text).filter(Boolean);
     inner = `<div class="wrap" style="top:48px;bottom:36px;justify-content:space-between">
-      <div><span class="tag">Free guide</span><h1 style="font-size:78px;margin-top:18px">${mark(s.title, false)}</h1></div>
+      <div><span class="tag">Free guide</span><h1 style="font-size:78px;margin-top:18px;max-width:790px">${mark(s.title, false)}</h1></div>
       <div style="display:flex;gap:30px;align-items:center">
         <div style="flex:1"><div style="background:#FFD84D;color:#000;font-family:Poppins;font-weight:900;font-size:56px;padding:20px 28px;border-radius:20px;line-height:1.1">COMMENT <span style="background:#000;color:#FFD84D;padding:0 14px;border-radius:12px">“${esc(kw)}”</span></div>
         <div style="margin-top:22px;font-size:34px;line-height:1.3;font-weight:600">${inside.map((l) => `<div style="margin-top:8px">${mark(l, false)}</div>`).join('')}</div></div>
