@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 // The owner's WINNING FORMULA (2026-10-20), reverse-engineered from his own posts:
 //   WINNERS  Copper scrap guide (80 lakh+ views, 300+ followers), "Rs 1 lakh export order" (15K+ twice, 50-100 followers),
 //            onion loss post (14K views, 365 comments), "How to import copper scrap" caption (641 likes, 255 comments)
@@ -42,4 +43,6 @@ export const FB_RULES = `FACEBOOK VERSION (separate caption for the Facebook pag
 
 // block injected into writer prompts
 export const GOV_RULE = 'NO-GOVERNMENT-RULE CLAIMS (owner rule, applies to captions AND slides): never state anything that depends on government rules that change often or must be checked before use: customs duty / BCD percentages, GST or IGST rates, HS-code-specific duties, DGFT / RBI / customs notifications or circulars, licence or registration requirements, import policy status (free / restricted / prohibited), scheme benefit rates, deadlines. Write only commercial facts (costs, margins, buyers, logistics, generic document names, risks); where a rule matters say "check the current rules with your CHA or DGFT before shipping".';
-export const winningBlock = () => [directivesBlock(), WINNING_FORMULA, GOV_RULE].filter(Boolean).join('\n\n');
+export const OWNER_LESSONS = 'OWNER REJECTION LESSONS (standing): (1) the FIRST image must show the product so clearly that it is identifiable at a glance, and slide 1 must carry a number: profit, loss, scarcity or a Rs amount. (2) Fonts must be large and headlines larger, in high-contrast colours that make a viewer stop and read. (3) Mistake/Fix, when allowed at all, must read as a mini story: what the mistake was and what the fixes are, each explained in 1-2 full lines, never a bare label. (4) Reject boring topics: avoid rule-change or notification topics; pick money, loss, buyer and cost stories.';
+const recentReasons = () => { try { const fb = JSON.parse(fs.readFileSync(new URL('./data/feedback.json', import.meta.url), 'utf8')); return fb.slice(-5).map((x) => '- ' + x.topic + ': ' + x.reason).join('\n'); } catch { return ''; } };
+export const winningBlock = () => [directivesBlock(), WINNING_FORMULA, GOV_RULE, OWNER_LESSONS, recentReasons() && 'RECENT OWNER REJECTION REASONS (do not repeat these mistakes):\n' + recentReasons()].filter(Boolean).join('\n\n');
