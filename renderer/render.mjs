@@ -82,7 +82,7 @@ async function pixabayHits(q, wantTall) {
 }
 async function getJudgedPhoto(slide, topic, queries, file, wantTall) {
   const list = (Array.isArray(queries) ? queries : [queries]).filter(Boolean).slice(0, 5);
-  const cands = []; const seen = new Set();
+  const cands = []; const seen = new Set(globalThis.AVOID_IDS || []);
   for (const q of list) {
     for (const h of (await pixabayHits(q, wantTall)).slice(0, 3)) if (!seen.has(h.id)) { seen.add(h.id); cands.push(h); }
   }
@@ -277,6 +277,12 @@ for (let i = 0; i < spec.slides.length; i++) {
   if (globalThis.FAMILY) { // V2: photo = Pixabay id or query (s.pick = n-th hit); reuse the saved img_NN.jpg unless the slide's photo was changed
     if (fs.existsSync(fileN) && process.argv.includes('--keep-photos')) imgFile = fileN;
     else if (s.imageId) imgFile = await getPhotoById(s.imageId, fileN);
+    else if (s.photoBrief && s.q) { // owner asked for a specific photo: several searches, then Gemini vision picks the best fit to HIS words (never the photo it replaces)
+      globalThis.AVOID_IDS = s.avoidId ? [s.avoidId] : [];
+      let judged; try { judged = await getJudgedPhoto({ title: s.photoBrief }, s.photoBrief, [s.q, ...(s.qAlt || [])], fileN, true); } catch { judged = undefined; }
+      globalThis.AVOID_IDS = [];
+      imgFile = judged || await getPhoto(s.q, fileN, true, s.pick || 0);
+    }
     else if (s.q) imgFile = await getPhoto(s.q, fileN, true, s.pick || 0);
   }
   else if (wantsPhoto && process.argv.includes('--keep-photos')) imgFile = fs.existsSync(fileN) ? fileN : null; // re-render only: reuse the photos already chosen, no new picks, no Gemini
