@@ -273,7 +273,7 @@ const STYLE_KEYS = ['titleColor', 'bodyColor', 'accent', 'accent2', 'ink', 'tagT
 const EDIT_FONTS = ['Archivo Black', 'Poppins', 'Montserrat', 'Inter', 'Bebas Neue', 'DM Serif Display', 'Anton', 'Rubik', 'Fraunces', 'Space Mono'];
 const isHex = (v) => /^#[0-9a-f]{3,8}$/i.test(String(v || ''));
 // V2 posts (blueprint families + cine): slides are {type,title,sub,label,bullets,items,text,button,note,q|imageId}; the owner's request is turned into a patch of those fields
-const V2_FIELDS = ['title', 'sub', 'label', 'bullets', 'items', 'text', 'button', 'note', 'q', 'qAlt', 'photoBrief', 'imageId'];
+const V2_FIELDS = ['title', 'sub', 'label', 'bullets', 'items', 'text', 'button', 'note', 'q', 'qAlt', 'photoBrief', 'collage', 'imageId'];
 async function editV2(post, spec, scope, instruction) {
   const idxs = scope === 'all' ? spec.slides.map((_, i) => i) : [Number(scope) - 1];
   const view = idxs.map((i) => { const x = spec.slides[i]; const o = { n: i + 1 }; for (const k of [...V2_FIELDS, 'style']) if (x[k] != null) o[k] = x[k]; return o; });
@@ -282,7 +282,7 @@ OWNER'S REQUEST: ${instruction}
 SLIDES YOU MAY CHANGE: ${JSON.stringify(view)}
 Markup inside text: **x** = gold highlight, ==x== = highlight, newline = line break, ^ at line start in a cover title = coloured line.
 Return JSON only: {"slides":{"<n>":{ ONLY the fields that change, same shape as above }},"summary":"one short sentence","cannot":""}
-Allowed fields: title, sub, label, bullets (array of strings), items (array, keep each item's keys), text, button, note, q (2-4 English keywords for a NEW photo, only if the owner asks to change the picture), qAlt (2 more different searches for the same wish, array of strings), photoBrief (the owner's wish for the picture in one plain sentence, e.g. "a cargo port at dusk with a person using a laptop"), style {"titleColor":"#RRGGBB" (white headline/name text),"accentColor":"#RRGGBB" (gold/yellow text)} for colour requests.
+Allowed fields: title, sub, label, bullets (array of strings), items (array, keep each item's keys), text, button, note, q (2-4 English keywords for a NEW photo, only if the owner asks to change the picture), qAlt (2 more different searches for the same wish, array of strings), collage (array of 4-6 different Pixabay searches: ONLY when the owner wants several photos blended around the slide, e.g. a cinematic cover; the title text stays where it is), photoBrief (the owner's wish for the picture in one plain sentence, e.g. "a cargo port at dusk with a person using a laptop"), style {"titleColor":"#RRGGBB" (white headline/name text),"accentColor":"#RRGGBB" (gold/yellow text)} for colour requests.
 Rules: plain easy English, no new facts or numbers, no duty/GST/licence claims. Size, spacing and layout are fixed by the template: if the owner asks only for that, set "cannot" to a short reason and say what you can do instead. Never return empty strings for fields that should stay.`);
   if (!out) throw new Error('no answer came back (Gemini quota?)');
   const patch = out.slides || {}; const changed = [];
@@ -881,6 +881,7 @@ async function ingestInbox() {
     const fp = path.join(d, f); let o = null;
     try { o = JSON.parse(fs.readFileSync(fp, 'utf8')); } catch { /* bad file */ }
     try { fs.unlinkSync(fp); } catch { /* already gone */ }
+    if (o && o.resend) { const p = byNo(o.resend) || state.posts.find((x) => x.id === o.resend); if (p) await sendPreview(p); continue; }
     if (o && o.reject) { const old = state.posts.find((p) => p.id === o.reject); if (old && old.status === 'awaiting_approval') { old.status = 'rejected'; old.rejectReason = 'replaced by a revised version'; save(); } continue; }
     if (!o || !o.id || state.posts.some((p) => p.id === o.id)) continue;
     if (o.replaces) { const old = state.posts.find((p) => p.id === o.replaces); if (old && old.status === 'awaiting_approval') { old.status = 'rejected'; old.rejectReason = 'replaced by a revised version'; } delete o.replaces; }

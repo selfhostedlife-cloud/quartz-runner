@@ -154,7 +154,7 @@ mark.o{background:#FF5A00;color:#fff}
 // the file lives in the PRIVATE data repo (studio/data/avatar.png; the runner repo is public); brand/avatar.png is a local-only fallback
 const AVATAR = (() => { for (const f of [path.join(root, 'studio', 'data', 'avatar.png'), path.join(root, 'brand', 'avatar.png'), path.join(root, '..', 'store', 'studio-data', 'avatar.png')]) { try { return dataUri(f); } catch { /* try next */ } } return ''; })();
 function slideHtml(s, i, total, handle, imgFile) {
-  if (globalThis.FAMILY) { const pf = s.pdfPreview ? path.resolve(globalThis.SPEC_DIR || '.', s.pdfPreview) : null; const h = familyHtml(s.family || globalThis.FAMILY, s, i, total, { handle, bg: imgFile ? dataUri(imgFile) : '', avatar: AVATAR, pdf: pf && fs.existsSync(pf) ? dataUri(pf) : '', H: globalThis.SLIDE_H || 1350 }); return h; } // V2 blueprint families (panel/case/guide/table/cine)
+  if (globalThis.FAMILY) { const pf = s.pdfPreview ? path.resolve(globalThis.SPEC_DIR || '.', s.pdfPreview) : null; const h = familyHtml(s.family || globalThis.FAMILY, globalThis.COLLAGE ? { ...s, _collage: globalThis.COLLAGE } : s, i, total, { handle, bg: imgFile ? dataUri(imgFile) : '', avatar: AVATAR, pdf: pf && fs.existsSync(pf) ? dataUri(pf) : '', H: globalThis.SLIDE_H || 1350 }); return h; } // V2 blueprint families (panel/case/guide/table/cine)
   if (globalThis.CINE) return cineHtml(s, i, total, handle, imgFile ? dataUri(imgFile) : '', AVATAR, globalThis.SLIDE_H || H, (() => { const pf = s.pdfPreview ? path.resolve(globalThis.SPEC_DIR || '.', s.pdfPreview) : null; return pf && fs.existsSync(pf) ? dataUri(pf) : ''; })()); // 4:5 cinematic template (cinema.mjs) draws its own avatar on the CTA
   const h = slideHtmlBase(s, i, total, handle, imgFile);
   if (s.type !== 'cta' || !AVATAR) return h;
@@ -292,6 +292,12 @@ for (let i = 0; i < spec.slides.length; i++) {
     if (judged) imgFile = judged;
     else if (judged === null) { fs.writeFileSync(fileN + '.nophoto', '1'); imgFile = null; }
     else imgFile = await getPhoto(q, fileN, s.type === 'cover' || s.type === 'cta', s.imageSkip || 0);
+  }
+  globalThis.COLLAGE = null;
+  if (globalThis.FAMILY && Array.isArray(s.collage) && s.collage.length) { // several photos blended around the blank space of the slide (owner request: cinematic cover)
+    globalThis.COLLAGE = [];
+    for (let k = 0; k < s.collage.length; k++) { const c = s.collage[k]; const fk = path.join(outDir, `img_${String(i + 1).padStart(2, '0')}_c${k + 1}.jpg`); try { const f2 = typeof c === 'number' ? await getPhotoById(c, fk) : await getPhoto(c, fk, false, 0); if (f2) globalThis.COLLAGE.push(dataUri(f2)); } catch (e) { console.error('[render] collage photo failed:', String(c), e.message.slice(0, 60)); } }
+    if (!globalThis.COLLAGE.length) globalThis.COLLAGE = null;
   }
   await page.setContent(slideHtml(s, i, spec.slides.length, handle, imgFile), { waitUntil: 'networkidle' });
   await page.evaluate(() => document.fonts.ready);
