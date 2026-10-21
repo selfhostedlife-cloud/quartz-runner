@@ -868,6 +868,7 @@ async function ingestInbox() {
     const fp = path.join(d, f); let o = null;
     try { o = JSON.parse(fs.readFileSync(fp, 'utf8')); } catch { /* bad file */ }
     try { fs.unlinkSync(fp); } catch { /* already gone */ }
+    if (o && o.reject) { const old = state.posts.find((p) => p.id === o.reject); if (old && old.status === 'awaiting_approval') { old.status = 'rejected'; old.rejectReason = 'replaced by a revised version'; save(); } continue; }
     if (!o || !o.id || state.posts.some((p) => p.id === o.id)) continue;
     if (o.replaces) { const old = state.posts.find((p) => p.id === o.replaces); if (old && old.status === 'awaiting_approval') { old.status = 'rejected'; old.rejectReason = 'replaced by a revised version'; } delete o.replaces; }
     const post = Object.assign({ dir: path.join(root, 'out', 'posts', o.id), status: 'awaiting_approval', kind: 'reference', look: 'v2', createdAt: new Date().toISOString() }, o, { no: ++state.seq });
