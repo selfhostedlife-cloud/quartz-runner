@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { judgePhoto, suggestQueries } from './photojudge.mjs';
 import { GRAPHIC_BANDS, THEME_VARS, FONT_IMPORT, layoutCss, layoutHtml } from './layouts.mjs';
 import { winnerHtml } from './winner.mjs';
+import { cineHtml } from './cinema.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, '..');
@@ -150,8 +151,9 @@ mark.o{background:#FF5A00;color:#fff}
 
 // owner (2026-10-21): the profile avatar sits on the last (CTA) slide of every post, whatever the template
 // the file lives in the PRIVATE data repo (studio/data/avatar.png; the runner repo is public); brand/avatar.png is a local-only fallback
-const AVATAR = (() => { for (const f of [path.join(root, 'studio', 'data', 'avatar.png'), path.join(root, 'brand', 'avatar.png')]) { try { return dataUri(f); } catch { /* try next */ } } return ''; })();
+const AVATAR = (() => { for (const f of [path.join(root, 'studio', 'data', 'avatar.png'), path.join(root, 'brand', 'avatar.png'), path.join(root, '..', 'store', 'studio-data', 'avatar.png')]) { try { return dataUri(f); } catch { /* try next */ } } return ''; })();
 function slideHtml(s, i, total, handle, imgFile) {
+  if (globalThis.CINE) return cineHtml(s, i, total, handle, imgFile ? dataUri(imgFile) : '', AVATAR, globalThis.SLIDE_H || H); // 4:5 cinematic template (cinema.mjs) draws its own avatar on the CTA
   const h = slideHtmlBase(s, i, total, handle, imgFile);
   if (s.type !== 'cta' || !AVATAR) return h;
   // the PNG has an opaque white square around the ring: crop it to the ring's circle (ring centre 284,270 of 578x537; scaled to 206px wide)
@@ -248,6 +250,8 @@ const spec = JSON.parse(fs.readFileSync(specPath, 'utf8'));
 globalThis.SPEC_DIR = path.dirname(path.resolve(specPath));
 globalThis.SPEC_STYLE = spec.style || null;
 globalThis.TEMPLATE = ['guide', 'math', 'verdict'].includes(spec.template) ? spec.template : null;
+globalThis.CINE = spec.template === 'cine';
+globalThis.SLIDE_H = spec.height || H;
 globalThis.PT = spec.photoTheme || null; // { ink:'#RRGGBB', accent, accent2, tagText, font, upper }
 fs.mkdirSync(outDir, { recursive: true });
 const handle = brand.handle; // one handle on every slide, for both accounts (owner rule 2026-10-13): never the per-spec value
@@ -257,7 +261,7 @@ let aiQ = {};
 if (!process.argv.includes('--no-judge') && !process.argv.includes('--keep-photos')) { try { aiQ = await suggestQueries(spec.slides, spec.topic || spec.slides[0]?.title || ''); } catch (e) { console.error('[render] query suggestions unavailable:', e.message.slice(0, 80)); } }
 
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: W, height: H } });
+const page = await browser.newPage({ viewport: { width: W, height: globalThis.SLIDE_H } });
 const files = [];
 const onlyArg = process.argv.indexOf('--only'); const only = onlyArg > 0 ? Number(process.argv[onlyArg + 1]) - 1 : -1;
 for (let i = 0; i < spec.slides.length; i++) {
