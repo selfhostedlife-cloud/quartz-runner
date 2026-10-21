@@ -1,31 +1,134 @@
 {
-  "family": "panel",
+  "family": "case",
   "keyword": "SCHEMES",
   "slides": [
-    { "type": "cover", "title": "7 EXPORT SUPPORT\nSCHEMES\n^EVERY EXPORTER\n^SHOULD KNOW", "sub": "Know the names. **Read the official details** before you apply.", "q": "cargo ship containers port aerial" },
-    { "type": "list", "label": "DGFT SCHEMES", "q": "factory machinery industry", "items": [
-      { "n": "01.", "name": "Advance Authorisation", "tag": "Official source: DGFT" },
-      { "n": "02.", "name": "EPCG Scheme", "tag": "Official source: DGFT" },
-      { "n": "03.", "name": "RoDTEP", "tag": "Official source: Dept of Commerce / DGFT" } ] },
-    { "type": "list", "label": "MORE SUPPORT", "q": "business documents stamp", "items": [
-      { "n": "04.", "name": "Duty Drawback", "tag": "Official source: Customs (CBIC)" },
-      { "n": "05.", "name": "Market Access Initiative", "tag": "Official source: Dept of Commerce" } ] },
-    { "type": "list", "label": "FOR NEW EXPORTERS", "q": "seminar training room office", "items": [
-      { "n": "06.", "name": "Niryat Bandhu", "tag": "Training and mentoring: DGFT" },
-      { "n": "07.", "name": "ZED Certification", "tag": "Official source: Ministry of MSME" } ] },
-    { "type": "cta", "title": "GET THE EXPORT SCHEMES CHECKLIST", "q": "cargo port containers night", "text": "Inside: **where to read each scheme** and what to ask before you apply.", "button": "COMMENT “SCHEMES”", "note": "I'll DM you the free PDF.\nFollow so it reaches you.", "pdfPreview": "pdf_preview.png" }
+    {
+      "type": "cover",
+      "title": "7 EXPORT SUPPORT\nSCHEMES\n^WHAT, WHO, HOW",
+      "sub": "One scheme per slide. **Read the official rules** before you apply.",
+      "q": "cargo ship containers port aerial"
+    },
+    {
+      "type": "case",
+      "label": "1. ADVANCE AUTHORISATION",
+      "q": "factory machinery industry",
+      "bullets": [
+        "**What:** Import raw material for your export goods with duty relief.",
+        "**Who:** Manufacturer exporters, or merchants tied to a manufacturer.",
+        "**How:** Apply online on the DGFT portal with your IEC and digital signature."
+      ]
+    },
+    {
+      "type": "case",
+      "label": "2. EPCG SCHEME",
+      "q": "cnc machine factory workshop",
+      "bullets": [
+        "**What:** Import machines for production at lower duty, with an export promise.",
+        "**Who:** Manufacturers, merchants tied to one, and service exporters with an IEC.",
+        "**How:** Apply online to your DGFT regional office. Keep the supplier invoice and a CA certificate ready."
+      ]
+    },
+    {
+      "type": "case",
+      "label": "3. RoDTEP",
+      "q": "calculator invoice documents desk",
+      "bullets": [
+        "**What:** Get credit for taxes on exports that are not refunded elsewhere.",
+        "**Who:** Exporters with an IEC, shipping notified products made in India.",
+        "**How:** Choose RoDTEP on the shipping bill. Then create your e-scrip on ICEGATE."
+      ]
+    },
+    {
+      "type": "case",
+      "label": "4. DUTY DRAWBACK",
+      "q": "shipping containers port crane",
+      "bullets": [
+        "**What:** Get back customs duty paid on imported inputs used in exports.",
+        "**Who:** Exporters whose goods used imported inputs on which duty was paid.",
+        "**How:** Claim it on the shipping bill. Keep your import duty proofs safe."
+      ]
+    },
+    {
+      "type": "case",
+      "label": "5. MARKET ACCESS INITIATIVE",
+      "q": "trade fair exhibition stand",
+      "bullets": [
+        "**What:** Support for export promotion work, like trade fairs and market visits abroad.",
+        "**Who:** Mostly export councils and trade bodies. Exporters join through them.",
+        "**How:** Become a member of your Export Promotion Council. Ask for the current guidelines."
+      ]
+    },
+    {
+      "type": "case",
+      "label": "6. NIRYAT BANDHU",
+      "q": "training seminar workshop room",
+      "bullets": [
+        "**What:** Free training and mentoring to help new exporters start.",
+        "**Who:** First-time exporters, MSMEs and young entrepreneurs.",
+        "**How:** Watch for sessions from your DGFT regional office and the DGFT website."
+      ]
+    },
+    {
+      "type": "case",
+      "label": "7. ZED CERTIFICATION",
+      "q": "quality inspection factory",
+      "bullets": [
+        "**What:** A quality and eco-friendly rating for MSMEs: Bronze, Silver or Gold.",
+        "**Who:** MSMEs with Udyam registration. Manufacturing units first.",
+        "**How:** Take the pledge and apply on the ZED portal: zed.msme.gov.in"
+      ]
+    },
+    {
+      "type": "cta",
+      "title": "GET THE EXPORT SCHEMES CHECKLIST",
+      "q": "cargo port containers night",
+      "text": "Inside: **where to read each scheme** and what to ask before you apply.",
+      "button": "COMMENT “SCHEMES”",
+      "note": "I'll DM you the free PDF.\nFollow so it reaches you.",
+      "pdfPreview": "pdf_preview.png"
+    }
   ],
   "caption": {
-    "body": "7 export support schemes every exporter should know by name.\n\nGovernment export schemes can change often, so the smartest first step is to know what exists and where the official rules are published. Advance Authorisation, EPCG and RoDTEP sit with DGFT and the Department of Commerce. Duty Drawback is handled through Customs. The Market Access Initiative, Niryat Bandhu and ZED Certification support market entry, training and quality.\n\nBefore you apply for any scheme, read the current official guidelines and ask your customs broker or consultant whether it fits your product.",
-    "hashtags": ["#export", "#exportschemes", "#importexport", "#msme", "#exportbusiness"]
+    "body": "7 export support schemes: what each one is, who can use it and how to apply.\n\nOne scheme per slide: Advance Authorisation, EPCG, RoDTEP, Duty Drawback, Market Access Initiative, Niryat Bandhu and ZED Certification. Each slide gives a short answer to three questions: what is it, who is eligible, and how do you apply.\n\nRules, forms and benefits change often. This is a simple guide, not legal or customs advice. Read the current official guidelines on the DGFT, Customs and ZED portals, or ask your customs broker, before you apply.",
+    "hashtags": [
+      "#export",
+      "#exportschemes",
+      "#importexport",
+      "#msme",
+      "#exportbusiness"
+    ]
   },
   "leadmagnet": {
     "title": "Export Schemes Checklist",
     "subtitle": "Where to read each scheme and what to ask first",
     "sections": [
-      { "heading": "Know the names", "items": ["Advance Authorisation, EPCG and RoDTEP: read the DGFT pages", "Duty Drawback: read the Customs (CBIC) pages", "Market Access Initiative: Department of Commerce", "Niryat Bandhu: DGFT training and mentoring", "ZED Certification: Ministry of MSME"] },
-      { "heading": "Before you apply", "items": ["Download the latest official guidelines", "Note the eligibility conditions for your product", "List the documents each scheme asks for", "Ask your customs broker if it fits your case"] },
-      { "heading": "Keep records", "items": ["Save every application and acknowledgement", "Track deadlines in one sheet", "Re-check the official site before each filing"] }
+      {
+        "heading": "Know the names",
+        "items": [
+          "Advance Authorisation, EPCG and RoDTEP: read the DGFT pages",
+          "Duty Drawback: read the Customs (CBIC) pages",
+          "Market Access Initiative: Department of Commerce",
+          "Niryat Bandhu: DGFT training and mentoring",
+          "ZED Certification: Ministry of MSME"
+        ]
+      },
+      {
+        "heading": "Before you apply",
+        "items": [
+          "Download the latest official guidelines",
+          "Note the eligibility conditions for your product",
+          "List the documents each scheme asks for",
+          "Ask your customs broker if it fits your case"
+        ]
+      },
+      {
+        "heading": "Keep records",
+        "items": [
+          "Save every application and acknowledgement",
+          "Track deadlines in one sheet",
+          "Re-check the official site before each filing"
+        ]
+      }
     ],
     "closing": "Follow my account for more export business tips"
   }

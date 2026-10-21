@@ -48,7 +48,10 @@ function panel(s, i, total, handle, bg, H) {
 function caseF(s, i, total, handle, bg, H) {
   if (s.type === 'cover') return panel(s, i, total, handle, bg, H);
   const bl = s.bullets || []; const n = Math.max(bl.length, 1);
-  const fs = n <= 3 ? 52 : n === 4 ? 46 : n === 5 ? 41 : 36;
+  let fs = n <= 3 ? 52 : n === 4 ? 46 : n === 5 ? 41 : 36;
+  const plain = (t) => String(t).replace(/\*\*|==|!!|\+\+/g, '');
+  const need = (f) => bl.reduce((a, t) => a + Math.ceil(plain(t).length * f * 0.54 / 900) * f * 1.24, 0) + (n - 1) * 26; // long answers (scheme what/who/how): shrink until the rows fit the box
+  while (fs > 32 && need(fs) > 430) fs -= 1;
   const rows = bl.map((t) => `<div style="display:flex;gap:20px;align-items:flex-start"><span style="flex:none;width:16px;height:16px;margin-top:${Math.round(fs * 0.45)}px;border-radius:50%;background:${YEL};box-shadow:0 0 10px rgba(255,212,0,.7)"></span><div style="font-size:${fs}px;line-height:1.24;font-weight:600">${mk(t)}</div></div>`);
   return page(H, `${topbar(handle)}
     <div style="position:absolute;left:40px;right:40px;top:122px;height:500px;border-radius:24px;overflow:hidden;border:5px solid #fff;box-shadow:0 12px 40px rgba(0,0,0,.7);${bg ? `background:url(${bg}) center/cover` : 'background:#222'};filter:contrast(1.08) saturate(1.12)"></div>
