@@ -867,7 +867,7 @@ function flushReference() {
 // posts dropped into <data>/inbox/*.json by the laptop are registered here, inside the run that owns the state (editing state.json from outside gets overwritten by the run's own save)
 // <data>/queue/*.json: one post at a time; the next is sent as soon as no v2 post is waiting for approval (i.e. the previous one was approved or rejected)
 function releaseQueue() {
-  if (state.posts.some((p) => p.look === 'v2' && p.status === 'awaiting_approval')) return;
+  if (state.posts.some((p) => (p.look === 'v2' || p.queuedResend) && p.status === 'awaiting_approval')) return;
   const q = path.join(dataDir, 'queue'); let files = [];
   try { files = fs.readdirSync(q).filter((f) => f.endsWith('.json')).sort(); } catch { return; }
   if (!files.length) return;
@@ -883,7 +883,7 @@ async function ingestInbox() {
     try { o = JSON.parse(fs.readFileSync(fp, 'utf8')); } catch { /* bad file */ }
     try { fs.unlinkSync(fp); } catch { /* already gone */ }
     if (o && o.patch) { const p = state.posts.find((x) => x.id === o.patch); if (p) { Object.assign(p, o.fields || {}); save(); } continue; }
-    if (o && o.resend) { const p = byNo(o.resend) || state.posts.find((x) => x.id === o.resend); if (p) await sendPreview(p); continue; }
+    if (o && o.resend) { const p = byNo(o.resend) || state.posts.find((x) => x.id === o.resend); if (p && p.status === 'awaiting_approval') { if (o.queued) { p.queuedResend = true; save(); } await sendPreview(p); } continue; }
     if (o && o.reject) { const old = state.posts.find((p) => p.id === o.reject); if (old && old.status === 'awaiting_approval') { old.status = 'rejected'; old.rejectReason = 'replaced by a revised version'; save(); } continue; }
     if (!o || !o.id || state.posts.some((p) => p.id === o.id)) continue;
     if (o.replaces) { const old = state.posts.find((p) => p.id === o.replaces); if (old && old.status === 'awaiting_approval') { old.status = 'rejected'; old.rejectReason = 'replaced by a revised version'; } delete o.replaces; }
