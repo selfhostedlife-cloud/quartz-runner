@@ -2,33 +2,133 @@
   "family": "panel",
   "keyword": "2027",
   "slides": [
-    { "type": "cover", "title": "10 EXPORT CATEGORIES\n^TO RESEARCH\n^FOR 2027", "sub": "Big groups in India's export data. **Check demand** in your target market.", "q": "global trade shipping containers world" },
-    { "type": "list", "label": "INDUSTRIAL", "q": "machinery parts steel factory", "items": [
-      { "n": "01.", "name": "Engineering goods", "tag": "Machinery • Parts • Tools" },
-      { "n": "02.", "name": "Electronic goods", "tag": "Devices • Components" },
-      { "n": "03.", "name": "Iron and steel products", "tag": "Construction • Industry" },
-      { "n": "04.", "name": "Plastic products", "tag": "Packaging • Household" } ] },
-    { "type": "list", "label": "DAILY NEEDS", "q": "pharmacy medicine tablets", "items": [
-      { "n": "05.", "name": "Drugs and pharma", "tag": "Healthcare • Essentials" },
-      { "n": "06.", "name": "Chemicals", "tag": "Industry • Agriculture" },
-      { "n": "07.", "name": "Rice and food grains", "tag": "Staples • Repeat orders" } ] },
-    { "type": "list", "label": "LIFESTYLE", "q": "textile garments factory", "items": [
-      { "n": "08.", "name": "Readymade garments", "tag": "Fashion • Retail" },
-      { "n": "09.", "name": "Cotton yarn and made-ups", "tag": "Home • Textiles" },
-      { "n": "10.", "name": "Marine products", "tag": "Seafood • Frozen" } ] },
-    { "type": "cta", "title": "GET THE EXPORT RESEARCH CHECKLIST", "q": "cargo port containers night", "text": "Inside: how to pick a product, **find the HS code** and test demand.", "button": "COMMENT “2027”", "note": "I'll DM you the free PDF.\nFollow so it reaches you.", "pdfPreview": "pdf_preview.png" }
+    {
+      "type": "cover",
+      "title": "10 EXPORT PRODUCT\nCATEGORIES\n^TO MAKE MILLIONS THROUGH\n^EXPORT BUSINESS",
+      "sub": "Big groups in India's export data. **Check demand** in your target market.",
+      "q": "containers ready for export shipment port"
+    },
+    {
+      "type": "list",
+      "label": "INDUSTRIAL",
+      "q": "machinery parts steel factory",
+      "items": [
+        {
+          "n": "01.",
+          "name": "Engineering goods",
+          "tag": "Machinery • Parts • Tools"
+        },
+        {
+          "n": "02.",
+          "name": "Electronic goods",
+          "tag": "Devices • Components"
+        },
+        {
+          "n": "03.",
+          "name": "Iron and steel products",
+          "tag": "Construction • Industry"
+        },
+        {
+          "n": "04.",
+          "name": "Plastic products",
+          "tag": "Packaging • Household"
+        }
+      ]
+    },
+    {
+      "type": "list",
+      "label": "DAILY NEEDS",
+      "q": "pharmacy medicine tablets",
+      "items": [
+        {
+          "n": "05.",
+          "name": "Drugs and pharma",
+          "tag": "Healthcare • Essentials"
+        },
+        {
+          "n": "06.",
+          "name": "Chemicals",
+          "tag": "Industry • Agriculture"
+        },
+        {
+          "n": "07.",
+          "name": "Rice and food grains",
+          "tag": "Staples • Repeat orders"
+        }
+      ]
+    },
+    {
+      "type": "list",
+      "label": "LIFESTYLE",
+      "q": "textile garments factory",
+      "items": [
+        {
+          "n": "08.",
+          "name": "Readymade garments",
+          "tag": "Fashion • Retail"
+        },
+        {
+          "n": "09.",
+          "name": "Cotton yarn and made-ups",
+          "tag": "Home • Textiles"
+        },
+        {
+          "n": "10.",
+          "name": "Marine products",
+          "tag": "Seafood • Frozen"
+        }
+      ]
+    },
+    {
+      "type": "cta",
+      "title": "GET THE EXPORT RESEARCH CHECKLIST",
+      "q": "cargo port containers night",
+      "text": "Inside: how to pick a product, **find the HS code** and test demand.",
+      "button": "COMMENT “2027”",
+      "note": "I'll DM you the free PDF.\nFollow so it reaches you.",
+      "pdfPreview": "pdf_preview.png"
+    }
   ],
   "caption": {
     "body": "10 export categories to research for 2027.\n\nThese are large product groups that appear again and again in India's export data: engineering goods, electronics, steel, plastics, pharma, chemicals, rice, garments, cotton made-ups and marine products. Big does not mean easy for a new exporter, so use this list as a starting point for research, not as a promise.\n\nPick one group, find its HS code, check demand and competition in your target market, and test with samples before you commit.",
-    "hashtags": ["#export", "#export2027", "#importexport", "#exportproducts", "#exportbusiness"]
+    "hashtags": [
+      "#export",
+      "#export2027",
+      "#importexport",
+      "#exportproducts",
+      "#exportbusiness"
+    ]
   },
   "leadmagnet": {
     "title": "Export Research Checklist",
     "subtitle": "Pick a product and test the market before you invest",
     "sections": [
-      { "heading": "Pick a product", "items": ["Choose one category from the list", "List 3 specific products you can supply", "Find each product's HS code", "Note your cost, minimum order and lead time"] },
-      { "heading": "Test demand", "items": ["Search trade data for the HS code (ITC Trade Map, UN Comtrade)", "Shortlist 3 importing countries", "List 10 buyers or distributors in each", "Check how many suppliers already sell there"] },
-      { "heading": "Decide", "items": ["Confirm import and labelling rules with your customs broker", "Prepare a sample set and price sheet", "Start with one market and one buyer group"] }
+      {
+        "heading": "Pick a product",
+        "items": [
+          "Choose one category from the list",
+          "List 3 specific products you can supply",
+          "Find each product's HS code",
+          "Note your cost, minimum order and lead time"
+        ]
+      },
+      {
+        "heading": "Test demand",
+        "items": [
+          "Search trade data for the HS code (ITC Trade Map, UN Comtrade)",
+          "Shortlist 3 importing countries",
+          "List 10 buyers or distributors in each",
+          "Check how many suppliers already sell there"
+        ]
+      },
+      {
+        "heading": "Decide",
+        "items": [
+          "Confirm import and labelling rules with your customs broker",
+          "Prepare a sample set and price sheet",
+          "Start with one market and one buyer group"
+        ]
+      }
     ],
     "closing": "Follow my account for more export business tips"
   }

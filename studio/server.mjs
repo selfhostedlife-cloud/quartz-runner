@@ -200,6 +200,7 @@ const hlNum = (t) => (/==/.test(t) ? t : t.replace(/(\bRs\.?\s?\d[\d,.]*(?:\s?(?
 async function onHookCommand(text, reply) {
   const post = byNo(text.split(/\s+/)[1]);
   if (!post) return reply('Usage: /hook 17  (the post number from the preview)');
+  if (post.look === 'v2') return reply('#' + post.no + ' has a fixed design. To change its hook use: /edit ' + post.no + ' 1 change the title to <your words>');
   if ((post.buffer || []).length) return reply('#' + post.no + ' is already in Buffer, so its cover cannot change here.');
   await reply('Writing plain-English hooks for #' + post.no + '...');
   const spec = readJson(path.join(post.dir, 'spec.json'), { slides: [] });
@@ -352,7 +353,7 @@ Convert colour names to hex. Relative requests ("bigger", "more space") are rela
   return { no: post.no, scope, summary: out.summary, style: st, pills, imageQuery: newImg };
 }
 async function onEditCommand(text, reply) {
-  const m = text.match(/^\/edit\s+(\d+)\s+(?:(all|\d+)\s+)?([\s\S]+)/i); const post = m && byNo(m[1]);
+  const m = text.match(/^\/edit\s+#?(\d+)[\s,:;.-]+(?:(?:slide\s*)?(all|\d+)[\s,:;.-]+)?([\s\S]+)/i); const post = m && byNo(m[1]);
   if (!m || !post) return reply(EDIT_HELP);
   if ((post.buffer || []).length) return reply('#' + post.no + ' is already in Buffer, so its slides cannot change here.');
   const scope = (m[2] || 'all').toLowerCase();
@@ -433,7 +434,7 @@ async function onMessage(m, who = 'main') {
   if (who === 'main' && text === '/ref') return reply(REF_HELP);
   if (who === 'main' && text === '/help') return reply(HELP_MAIN);
   if (who === 'main' && /^\/edit\b/.test(text)) return onEditCommand(text, reply);
-  if (who === 'main' && /^\/fresh\b/.test(text)) { const p = byNo(text.split(/\s+/)[1]); if (!p) return reply('Usage: /fresh 17 (new plain hook + new design for post #17)'); reply('Refreshing #' + p.no + ' (hook + design), about 2 minutes...'); return refreshPost(p).catch((e) => reply('Refresh failed: ' + e.message)); }
+  if (who === 'main' && /^\/fresh\b/.test(text)) { const p = byNo(text.split(/\s+/)[1]); if (p?.look === 'v2') return reply('/fresh would rebuild #' + p.no + ' and lose its slides, so it is blocked on this post. To change the hook use: /edit ' + p.no + ' 1 change the title to <your words>'); if (!p) return reply('Usage: /fresh 17 (new plain hook + new design for post #17)'); reply('Refreshing #' + p.no + ' (hook + design), about 2 minutes...'); return refreshPost(p).catch((e) => reply('Refresh failed: ' + e.message)); }
   if (who === 'main' && /^\/hook\b/.test(text)) return onHookCommand(text, reply);
   if (text === '/status') {
     const acct = who;
@@ -881,6 +882,7 @@ async function ingestInbox() {
     const fp = path.join(d, f); let o = null;
     try { o = JSON.parse(fs.readFileSync(fp, 'utf8')); } catch { /* bad file */ }
     try { fs.unlinkSync(fp); } catch { /* already gone */ }
+    if (o && o.patch) { const p = state.posts.find((x) => x.id === o.patch); if (p) { Object.assign(p, o.fields || {}); save(); } continue; }
     if (o && o.resend) { const p = byNo(o.resend) || state.posts.find((x) => x.id === o.resend); if (p) await sendPreview(p); continue; }
     if (o && o.reject) { const old = state.posts.find((p) => p.id === o.reject); if (old && old.status === 'awaiting_approval') { old.status = 'rejected'; old.rejectReason = 'replaced by a revised version'; save(); } continue; }
     if (!o || !o.id || state.posts.some((p) => p.id === o.id)) continue;
