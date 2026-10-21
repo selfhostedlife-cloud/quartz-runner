@@ -1,0 +1,46 @@
+{
+  "family": "table",
+  "keyword": "PORTALS",
+  "slides": [
+    { "type": "cover", "title": "18 WEBSITES\n^EVERY EXPORTER\n^SHOULD BOOKMARK", "sub": "Official portals, support bodies and **trade data** tools", "q": "container port crane aerial" },
+    { "type": "list", "title": "GOVERNMENT PORTALS - 1", "q": "government building india", "entries": [
+      { "name": "1. DGFT", "desc": "Foreign trade policy and IEC registration", "url": "dgft.gov.in" },
+      { "name": "2. ICEGATE", "desc": "Customs e-filing gateway for trade documents", "url": "icegate.gov.in" },
+      { "name": "3. Dept of Commerce", "desc": "Trade policy news and export-import statistics", "url": "commerce.gov.in" } ] },
+    { "type": "list", "title": "GOVERNMENT PORTALS - 2", "q": "city skyline night india", "entries": [
+      { "name": "4. PIB", "desc": "Official government press releases", "url": "pib.gov.in" },
+      { "name": "5. ECGC", "desc": "Export credit insurance body", "url": "ecgc.in" },
+      { "name": "6. EXIM Bank", "desc": "Lender that supports Indian exporters", "url": "eximbankindia.in" } ] },
+    { "type": "list", "title": "EXPORT PROMOTION BODIES - 1", "q": "trade fair exhibition hall", "entries": [
+      { "name": "7. FIEO", "desc": "Exporters' federation: fairs and buyer meets", "url": "fieo.org" },
+      { "name": "8. APEDA", "desc": "Agri and processed food export body", "url": "apeda.gov.in" },
+      { "name": "9. MPEDA", "desc": "Marine and seafood export body", "url": "mpeda.gov.in" } ] },
+    { "type": "list", "title": "EXPORT PROMOTION BODIES - 2", "q": "spices market colorful", "entries": [
+      { "name": "10. Spices Board", "desc": "Spice exporters: registration and quality support", "url": "indianspices.com" },
+      { "name": "11. Coir Board", "desc": "Coir industry and exports support body", "url": "coirboard.gov.in" },
+      { "name": "12. SIDBI", "desc": "Development bank for MSMEs", "url": "sidbi.in" } ] },
+    { "type": "list", "title": "TRADE DATA TOOLS - 1", "q": "data analytics charts laptop", "entries": [
+      { "name": "13. Indian Trade Portal", "desc": "Trade and market information in one place", "url": "indiantradeportal.in" },
+      { "name": "14. ITC Trade Map", "desc": "Trade statistics by product and country", "url": "trademap.org" },
+      { "name": "15. UN Comtrade", "desc": "Official UN database of trade statistics", "url": "comtradeplus.un.org" } ] },
+    { "type": "list", "title": "TRADE DATA TOOLS - 2", "q": "world map globe trade", "entries": [
+      { "name": "16. WTO", "desc": "The global body for trade rules", "url": "wto.org" },
+      { "name": "17. ITC", "desc": "Market analysis and export tools for businesses", "url": "intracen.org" },
+      { "name": "18. World Bank WITS", "desc": "Trade data and country profiles", "url": "wits.worldbank.org" } ] },
+    { "type": "cta", "title": "GET THE EXPORT PORTALS LIST", "q": "cargo port containers night", "text": "Inside: all **18 websites** with what to use each one for.", "button": "COMMENT “PORTALS”", "note": "I'll DM you the free PDF.\nFollow so it reaches you.", "pdfPreview": "pdf_preview.png" }
+  ],
+  "caption": {
+    "body": "18 websites every exporter should bookmark.\n\nGood exporters do not guess. They check official sources and real trade data. In this post: government portals like DGFT and ICEGATE, export promotion bodies such as FIEO, APEDA, MPEDA, the Spices Board and the Coir Board, finance bodies like ECGC, EXIM Bank and SIDBI, and trade data tools like ITC Trade Map, UN Comtrade, WTO and the World Bank WITS.\n\nSave this post, open each site once, and keep the list handy when you research a new product or market.",
+    "hashtags": ["#export", "#exportportals", "#importexport", "#tradedata", "#exportbusiness"]
+  },
+  "leadmagnet": {
+    "title": "Export Portals List",
+    "subtitle": "18 websites and what to use each one for",
+    "sections": [
+      { "heading": "Government and finance", "items": ["DGFT (dgft.gov.in): foreign trade policy, IEC", "ICEGATE (icegate.gov.in): customs e-filing", "Department of Commerce (commerce.gov.in): trade policy and statistics", "PIB (pib.gov.in): official press releases", "ECGC (ecgc.in), EXIM Bank (eximbankindia.in), SIDBI (sidbi.in)"] },
+      { "heading": "Export promotion bodies", "items": ["FIEO (fieo.org): fairs and buyer meets", "APEDA (apeda.gov.in): agri and processed food", "MPEDA (mpeda.gov.in): marine products", "Spices Board (indianspices.com) and Coir Board (coirboard.gov.in)"] },
+      { "heading": "Trade data tools", "items": ["Indian Trade Portal (indiantradeportal.in)", "ITC Trade Map (trademap.org)", "UN Comtrade (comtradeplus.un.org)", "WTO (wto.org), ITC (intracen.org), World Bank WITS (wits.worldbank.org)"] }
+    ],
+    "closing": "Follow my account for more export business tips"
+  }
+}

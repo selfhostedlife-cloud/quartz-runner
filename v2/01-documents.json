@@ -1,0 +1,42 @@
+{
+  "family": "guide",
+  "keyword": "DOCS",
+  "slides": [
+    { "type": "cover", "title": "7 EXPORT DOCUMENTS\nEVERY BEGINNER NEEDS", "sub": "A simple guide to the **papers behind** your first shipment", "chips": ["Know what each is for", "Avoid common mistakes", "Ship with confidence"], "q": "cargo ship port containers sunset" },
+    { "type": "list", "title": "INVOICE & PACKING LIST", "sub": "The two papers buyers and customs read first", "icon": "doc", "note": "Details on every document must match each other.", "items": [
+      { "name": "Commercial Invoice", "desc": "Raised by you: goods, value and terms of sale" },
+      { "name": "Packing List", "desc": "What is in each carton: counts, weights, marks" } ] },
+    { "type": "list", "title": "SHIPPING DOCUMENTS", "sub": "How the cargo is cleared and carried", "note": "Sea cargo uses a bill of lading, air cargo an airway bill.", "items": [
+      { "name": "Shipping Bill", "desc": "Filed with Indian Customs for export clearance", "icon": "doc" },
+      { "name": "Bill of Lading", "desc": "Sea cargo: contract of carriage and proof of shipment", "icon": "ship" },
+      { "name": "Airway Bill", "desc": "Air cargo: issued by the airline or its agent", "icon": "plane" } ] },
+    { "type": "list", "title": "REGISTRATIONS", "sub": "Set these up before the first order", "note": "Check the official sites for the current steps.", "items": [
+      { "name": "IEC (Import Export Code)", "desc": "Issued by DGFT; most exporters need it", "url": "dgft.gov.in", "icon": "shield" },
+      { "name": "ICEGATE login", "desc": "The customs portal used to file shipping bills", "url": "icegate.gov.in", "icon": "globe" },
+      { "name": "Bank account for exports", "desc": "Ask your bank for its export payment steps", "icon": "coin" } ] },
+    { "type": "list", "title": "PRODUCT CERTIFICATES", "sub": "Your buyer's country decides which apply", "note": "Ask the buyer which certificates they need.", "items": [
+      { "name": "Certificate of Origin", "desc": "Shows where the goods were made", "icon": "globe" },
+      { "name": "Phytosanitary Certificate", "desc": "For plant products: plant health check", "icon": "shield" },
+      { "name": "Fumigation Certificate", "desc": "Treatment proof for some cargo and packing", "icon": "box" },
+      { "name": "Inspection Certificate", "desc": "Quality check, often by a third party", "icon": "doc" } ] },
+    { "type": "list", "title": "PAYMENT DOCUMENTS", "sub": "Papers that get you paid", "note": "Agree payment terms in writing first.", "items": [
+      { "name": "Proforma Invoice", "desc": "Your quote, sent before the order is confirmed", "icon": "doc" },
+      { "name": "Letter of Credit (LC)", "desc": "Bank promise to pay when documents match its terms", "icon": "coin" },
+      { "name": "e-BRC", "desc": "Bank proof that export money was received", "icon": "shield" } ] },
+    { "type": "cta", "title": "GET THE EXPORT DOCUMENTS CHECKLIST", "q": "cargo port containers night", "text": "Inside: every paper above, **in shipping order**, with a tick box.", "button": "COMMENT “DOCS”", "note": "I'll DM you the free PDF.\nFollow so it reaches you.", "pdfPreview": "pdf_preview.png" }
+  ],
+  "caption": {
+    "body": "7 export documents every beginner needs for the first shipment.\n\nMost first-time exporters lose time because one paper is missing or does not match another. Start with the commercial invoice and packing list, then the shipping bill and bill of lading or airway bill. Set up your IEC and customs login early, and ask your buyer which product certificates apply in their country. For payment, know the proforma invoice, the letter of credit and the e-BRC.\n\nThe rules and forms change, so confirm the current steps on the official sites or with your customs broker before you file.",
+    "hashtags": ["#export", "#exportdocuments", "#importexport", "#exportbusiness", "#shipping"]
+  },
+  "leadmagnet": {
+    "title": "Export Documents Checklist",
+    "subtitle": "Every paper for your first shipment, in order",
+    "sections": [
+      { "heading": "Before the order", "items": ["IEC registered and details match your bank", "ICEGATE login set up", "Proforma invoice sent with price, terms and validity", "Payment terms agreed in writing"] },
+      { "heading": "Before shipping", "items": ["Commercial invoice raised and checked", "Packing list matches the cartons", "Product certificates the buyer asked for are ready", "Booking confirmed with the shipping line or airline"] },
+      { "heading": "Clearance and payment", "items": ["Shipping bill filed and copy saved", "Bill of lading or airway bill checked for errors", "Documents sent to the buyer or bank as agreed", "e-BRC requested from your bank after payment"] }
+    ],
+    "closing": "Follow my account for more export business tips"
+  }
+}

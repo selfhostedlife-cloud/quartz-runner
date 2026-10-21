@@ -1,0 +1,39 @@
+{
+  "family": "guide",
+  "keyword": "UK",
+  "slides": [
+    { "type": "cover", "title": "HOW TO FIND\nBUYERS IN THE UK", "sub": "A step-by-step **map** for Indian exporters", "chips": ["B2B platforms", "Trade bodies", "Fairs and markets"], "q": "london big ben tower bridge" },
+    { "type": "list", "title": "3 PLATFORMS TO START", "sub": "Find UK companies before you send a single email", "note": "Directories help you find companies. Verify every buyer yourself.", "items": [
+      { "name": "Kompass UK", "desc": "Business directory of UK companies", "url": "gb.kompass.com", "icon": "globe" },
+      { "name": "Europages", "desc": "European B2B directory with UK listings", "url": "europages.co.uk", "icon": "globe" },
+      { "name": "Companies House", "desc": "Check a UK company's official registration", "url": "companieshouse.gov.uk", "icon": "shield" } ] },
+    { "type": "list", "title": "UK TRADE BODIES", "sub": "Organisations that talk to UK buyers every day", "note": "Many offer events, member lists and market guides.", "icon": "building", "items": [
+      { "name": "British Chambers of Commerce", "desc": "The UK's business network", "url": "britishchambers.org.uk" },
+      { "name": "London Chamber of Commerce", "desc": "Business network for London companies", "url": "londonchamber.co.uk" },
+      { "name": "UK India Business Council", "desc": "Connects businesses for UK-India trade", "url": "ukibc.com" } ] },
+    { "type": "list", "title": "FAIRS AND MARKETS", "sub": "Meet buyers face to face", "note": "Check each website for the current dates.", "icon": "booth", "items": [
+      { "name": "IFE", "desc": "London | food and drink", "url": "ife.co.uk" },
+      { "name": "Spring Fair", "desc": "Birmingham | home, gift and retail", "url": "springfair.com" },
+      { "name": "Pure London", "desc": "Birmingham | fashion", "url": "purelondon.com" },
+      { "name": "New Covent Garden Market", "desc": "London | fruit, vegetables, flowers", "url": "newcoventgardenmarket.com" } ] },
+    { "type": "list", "title": "INDIA'S HIGH COMMISSION", "sub": "Official help in London", "note": "Check the official website for current contact details.", "items": [
+      { "name": "Official website", "desc": "Start here for trade-related contacts", "url": "hcilondon.gov.in", "icon": "globe" },
+      { "name": "Economic and Commerce wing", "desc": "Ask for trade enquiries and buyer checks", "icon": "building" },
+      { "name": "Before you ship", "desc": "Verify every new UK buyer first", "icon": "shield" } ] },
+    { "type": "cta", "title": "GET THE UK BUYER CHECKLIST", "q": "cargo port containers night", "text": "Inside: the platforms, trade bodies and fairs above plus a **buyer verification** checklist.", "button": "COMMENT “UK”", "note": "I'll DM you the free PDF.\nFollow so it reaches you.", "pdfPreview": "pdf_preview.png" }
+  ],
+  "caption": {
+    "body": "How to find buyers in the UK, step by step.\n\nStart online with business directories like Kompass UK and Europages, and use Companies House to check that a UK company is really registered. Then work with trade bodies such as the British Chambers of Commerce, the London Chamber of Commerce and the UK India Business Council. Meet buyers at fairs like IFE in London and Spring Fair and Pure London in Birmingham, or visit New Covent Garden Market for fresh produce.\n\nUse the official website of the High Commission of India in London for trade help, and verify every new buyer before you ship.",
+    "hashtags": ["#export", "#uk", "#importexport", "#findbuyers", "#globaltrade"]
+  },
+  "leadmagnet": {
+    "title": "UK Buyer Checklist",
+    "subtitle": "Find, check and approach UK buyers",
+    "sections": [
+      { "heading": "Find buyers", "items": ["Search Kompass UK and Europages for your product", "List 20 UK companies that buy it", "Pick one fair that fits your product", "Join a UK-India trade body mailing list"] },
+      { "heading": "Check every buyer", "items": ["Look the company up on Companies House", "Match name, address and website", "Ask for a trade reference", "Search the company name with the word scam"] },
+      { "heading": "Approach and ship", "items": ["Send a short intro with photos and specs", "Offer samples before bulk", "Agree payment terms in writing", "Confirm labelling and import rules with your customs broker"] }
+    ],
+    "closing": "Follow my account for more export business tips"
+  }
+}

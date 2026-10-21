@@ -1,0 +1,49 @@
+{
+  "family": "case",
+  "keyword": "COIR",
+  "slides": [
+    { "type": "cover", "title": "COIR PRODUCTS\nEXPORT BUSINESS", "sub": "A natural-fibre idea for **Indian exporters**", "q": "coconut coir fibre rope" },
+    { "type": "case", "label": "WHY COIR?", "imageId": 1330055, "bullets": [
+      "Coir comes from **coconut husk**, a natural fibre",
+      "India is a **leading producer** of coir",
+      "Buyers look for **eco-friendly** materials",
+      "Used in **home, garden and farm** products" ] },
+    { "type": "case", "label": "WHAT YOU CAN SELL", "q": "coir doormat mats", "bullets": [
+      "**Coir mats** and doormats",
+      "**Coir pith** blocks for growing media",
+      "**Coir rope** and twine",
+      "**Garden products** like liners and pots",
+      "**Geotextiles** for soil and slope cover" ] },
+    { "type": "case", "label": "WHERE IT IS MADE", "q": "kerala backwaters coconut palms", "bullets": [
+      "**Kerala** is the hub for coir products",
+      "Much of the work is around **Alappuzha**",
+      "**Tamil Nadu** is a key source of fibre and husk",
+      "The **Coir Board** is based in Kochi" ] },
+    { "type": "case", "label": "WHAT BUYERS CHECK", "q": "rope twine natural material", "bullets": [
+      "**Consistent quality** from batch to batch",
+      "**Clean, dry** fibre and pith",
+      "**Samples first**, then bulk",
+      "**Packing** that protects against moisture" ] },
+    { "type": "case", "label": "HOW TO START", "q": "shipping containers cargo", "bullets": [
+      "**Pick one product** such as mats or pith blocks",
+      "**Visit a unit** and see the process",
+      "**Make samples** with clear photos",
+      "**Confirm the HS code** and rules with your broker",
+      "**Contact verified buyers** with samples" ] },
+    { "type": "cta", "title": "GET THE COIR EXPORT CHECKLIST", "q": "cargo port containers night", "text": "Inside: **product choice**, buyer checks and shipping steps.", "button": "COMMENT “COIR”", "note": "I'll DM you the free PDF.\nFollow so it reaches you.", "pdfPreview": "pdf_preview.png" }
+  ],
+  "caption": {
+    "body": "Coir products export business: a natural-fibre idea for Indian exporters.\n\nCoir is made from coconut husk. India is a leading producer, with Kerala as the hub for finished coir products and Tamil Nadu as an important source of fibre. Products include mats, pith blocks, rope and garden items.\n\nSlides cover why coir, what you can sell, where it is made, what buyers check and how to start with a small sample set. The Coir Board in Kochi is a good official source to read first. Verify demand, HS code and import rules for your target market before shipping.",
+    "hashtags": ["#export", "#coir", "#importexport", "#exportbusiness", "#sustainable"]
+  },
+  "leadmagnet": {
+    "title": "Coir Export Checklist",
+    "subtitle": "From first sample to first shipment",
+    "sections": [
+      { "heading": "Choose and source", "items": ["Pick one product: mats, pith blocks, rope or garden items", "Visit a unit in Kerala or Tamil Nadu if you can", "Ask for samples and a price sheet", "Check cleanliness, dryness and finish yourself"] },
+      { "heading": "Prepare for buyers", "items": ["Photograph samples on a plain background", "Write specs: size, weight, material", "Decide minimum order and lead time", "Confirm the HS code and rules with your customs broker"] },
+      { "heading": "Verify and ship", "items": ["Verify the buyer's company, website and address", "Agree payment terms in writing", "Send a sample first and keep proof of delivery", "Pack against moisture and keep copies of all documents"] }
+    ],
+    "closing": "Follow my account for more export business tips"
+  }
+}

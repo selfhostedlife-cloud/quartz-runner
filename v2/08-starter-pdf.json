@@ -1,0 +1,28 @@
+{
+  "family": "case",
+  "keyword": "START",
+  "slides": [
+    { "type": "cover", "title": "FREE EXPORT\nSTARTER PDF", "sub": "A ready-to-use **blueprint** to plan your first shipment", "q": "business documents desk laptop" },
+    { "type": "case", "label": "WHAT YOU GET INSIDE", "imageId": 427510, "bullets": [
+      "**Step 1:** pick a product and find its HS code",
+      "**Step 2:** shortlist markets and buyers",
+      "**Step 3:** documents you need, in order",
+      "**Step 4:** buyer checks and payment terms",
+      "**Step 5:** your first shipment checklist" ] },
+    { "type": "cta", "title": "GET THE EXPORT STARTER PDF", "q": "cargo port containers night", "text": "Free for followers. **One PDF**, five steps.", "button": "COMMENT “START”", "note": "I'll DM you the free PDF.\nFollow so it reaches you.", "pdfPreview": "pdf_preview.png" }
+  ],
+  "caption": {
+    "body": "Free export starter PDF: plan your first shipment in five steps.\n\nMany beginners know they want to export but do not know what to do first. This PDF puts the order in one place: choose a product and its HS code, shortlist markets and buyers, line up the documents, check the buyer and agree payment terms, and run a final checklist before shipping.\n\nIt is a planning guide, not legal or customs advice. Confirm current rules with your customs broker or the official sites.",
+    "hashtags": ["#export", "#exportstarter", "#importexport", "#exportbusiness", "#freepdf"]
+  },
+  "leadmagnet": {
+    "title": "Export Starter Checklist",
+    "subtitle": "Plan your first shipment in five steps",
+    "sections": [
+      { "heading": "1. Product and market", "items": ["Choose one product you can supply reliably", "Find its HS code", "Shortlist 2-3 target countries using trade data", "Check demand and competition"] },
+      { "heading": "2. Buyers and documents", "items": ["List 20 possible buyers", "Prepare a company profile, price sheet and samples", "Register IEC and ICEGATE", "Learn the documents: invoice, packing list, shipping bill, transport document"] },
+      { "heading": "3. Check, agree, ship", "items": ["Verify each buyer before you quote", "Agree payment terms and Incoterms in writing", "Confirm rules and labelling with your customs broker", "Run the final checklist and keep copies of everything"] }
+    ],
+    "closing": "Follow my account for more export business tips"
+  }
+}

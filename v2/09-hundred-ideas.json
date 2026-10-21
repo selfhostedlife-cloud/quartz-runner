@@ -1,0 +1,26 @@
+{
+  "family": "panel",
+  "keyword": "100",
+  "slides": [
+    { "type": "cover", "title": "100 EXPORT PRODUCT\n^IDEAS TO RESEARCH\n^FROM INDIA", "sub": "Pick one. **Check the demand** before you invest.", "q": "colorful market spices products" },
+    { "type": "grid", "label": "FOOD AND FARM", "q": "spices market colorful", "note": "CHECK DEMAND. THEN TEST WITH SAMPLES.", "items": ["Rice", "Spices", "Tea", "Coffee", "Pulses", "Chickpeas", "Cashew nuts", "Groundnuts", "Sesame seeds", "Turmeric", "Cumin", "Black pepper", "Cardamom", "Jaggery", "Honey", "Dry fruits", "Mangoes", "Bananas", "Onions", "Pickles", "Sauces", "Coconut products", "Millets", "Ghee", "Frozen vegetables"] },
+    { "type": "grid", "label": "HOME AND LIFESTYLE", "q": "handicrafts market home decor", "note": "CHECK DEMAND. THEN TEST WITH SAMPLES.", "items": ["Handicrafts", "Home decor", "Brassware", "Wooden furniture", "Bamboo products", "Ceramic products", "Candles", "Incense sticks", "Carpets and rugs", "Cushion covers", "Home linen", "Cotton towels", "Scarves", "Leather footwear", "Leather bags", "Jute bags", "Cotton bags", "Coir products", "Stainless steel utensils", "Kitchenware", "Wooden cutlery", "Paper bags", "Natural cosmetics", "Ayurvedic products", "Essential oils"] },
+    { "type": "grid", "label": "INDUSTRY AND BUSINESS", "q": "industrial machinery parts bolts", "note": "CHECK DEMAND. THEN TEST WITH SAMPLES.", "items": ["Fasteners", "Nuts and bolts", "Bearings", "Auto components", "Hand tools", "Industrial valves", "Pumps", "PVC pipes", "Electrical cables", "Copper products", "Aluminium products", "Metal fabrication", "Safety equipment", "Construction hardware", "Agricultural tools", "Solar accessories", "Packaging materials", "Plastic containers", "Paper cups", "Medical disposables", "Gloves", "Masks", "Adhesives", "Tyres", "Recycled materials"] },
+    { "type": "grid", "label": "TEXTILE AND FASHION", "q": "textile fabric rolls factory", "note": "CHECK DEMAND. THEN TEST WITH SAMPLES.", "items": ["Cotton fabric", "Cotton yarn", "Readymade garments", "T-shirts", "Kurtis", "Denim", "Silk fabric", "Embroidered fabric", "Fashion accessories", "Imitation jewellery", "Silver jewellery", "Handloom products", "Uniforms", "Sportswear", "Baby clothing", "Shawls", "Bed sheets", "Curtains", "Sarees", "Mens shirts", "Hosiery", "Tote bags", "Hats and caps", "Socks", "Technical textiles"] },
+    { "type": "cta", "title": "GET THE FULL LIST OF 100 PRODUCTS", "q": "cargo port containers night", "text": "Inside: all 100 ideas with **HS code search tips** and target market notes.", "button": "COMMENT “100”", "note": "I'll DM you the free PDF.\nFollow so it reaches you.", "pdfPreview": "pdf_preview.png" }
+  ],
+  "caption": {
+    "body": "100 export product ideas to research from India.\n\nThis is a starting list, not a promise of profit. Food and farm products, home and lifestyle goods, industrial parts and textiles all have exporters and buyers, but the right choice depends on your supply, your costs and your target market.\n\nPick two or three ideas that match what you can source reliably, find their HS codes, check trade data for demand and competition, and test with samples before you invest.",
+    "hashtags": ["#export", "#exportproducts", "#importexport", "#exportideas", "#exportbusiness"]
+  },
+  "leadmagnet": {
+    "title": "100 Export Product Ideas",
+    "subtitle": "A research list, with how to test each idea",
+    "sections": [
+      { "heading": "How to use this list", "items": ["Tick 5 products you can source reliably", "Find each HS code", "Check trade data for demand by country", "Shortlist 2 products and 2 markets"] },
+      { "heading": "Test before you invest", "items": ["Get samples and a price sheet", "Check competitor prices in the target market", "Confirm rules and labelling with your customs broker", "Send samples to 5 verified buyers"] },
+      { "heading": "Categories covered", "items": ["Food and farm products", "Home and lifestyle", "Industry and business supplies", "Textile and fashion"] }
+    ],
+    "closing": "Follow my account for more export business tips"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "family": "case",
+  "keyword": "FUNDING",
+  "slides": [
+    { "type": "cover", "title": "EXPORT FINANCE:\nWHERE TO LOOK", "sub": "Your export journey doesn't end with **a good order**", "q": "business handshake bank finance" },
+    { "type": "case", "label": "START WITH YOUR BANK", "q": "bank building finance office", "bullets": [
+      "Ask about **pre-shipment finance** for export orders",
+      "Ask what **documents** the bank needs from you",
+      "Keep your **purchase order** and contract ready",
+      "Compare **offers** from more than one bank" ] },
+    { "type": "case", "label": "PROTECT AGAINST NON-PAYMENT", "imageId": 3002431, "bullets": [
+      "**ECGC** offers export credit insurance",
+      "It covers **buyer non-payment** and political risks",
+      "Banks may also use it to **lend more freely**",
+      "Official site: **ecgc.in**" ] },
+    { "type": "case", "label": "EXIM BANK AND SIDBI", "imageId": 10207329, "bullets": [
+      "**EXIM Bank** supports Indian exporters",
+      "**SIDBI** is a development bank for **MSMEs**",
+      "Official sites: **eximbankindia.in**, **sidbi.in**",
+      "Read the **current products** before you apply" ] },
+    { "type": "case", "label": "LEARN FIRST: NIRYAT BANDHU", "q": "training workshop learning", "bullets": [
+      "**DGFT** runs Niryat Bandhu for new exporters",
+      "It offers **training and mentoring**",
+      "Topics include **documents, logistics and finance**",
+      "Check **dgft.gov.in** for current programmes" ] },
+    { "type": "cta", "title": "GET THE EXPORT FINANCE CHECKLIST", "q": "cargo port containers night", "text": "Inside: **questions to ask** banks and a funding readiness list.", "button": "COMMENT “FUNDING”", "note": "I'll DM you the free PDF.\nFollow so it reaches you.", "pdfPreview": "pdf_preview.png" }
+  ],
+  "caption": {
+    "body": "Export finance: where to look before you take your first big order.\n\nGood orders still need cash to fulfil. Start by talking to your bank about pre-shipment finance, and ask what documents it will need. Look at ECGC for export credit insurance against buyer non-payment, and read what EXIM Bank and SIDBI currently offer. If you are new, DGFT's Niryat Bandhu programme offers training and mentoring.\n\nProducts, limits and eligibility change, so always check the official websites and the bank's current terms before you apply.",
+    "hashtags": ["#export", "#exportfinance", "#importexport", "#msme", "#exportbusiness"]
+  },
+  "leadmagnet": {
+    "title": "Export Finance Checklist",
+    "subtitle": "Questions to ask and documents to keep ready",
+    "sections": [
+      { "heading": "Before you talk to a bank", "items": ["Purchase order or contract from the buyer", "IEC and business registration documents", "Costing sheet for the order", "Timeline: production, shipping and payment dates"] },
+      { "heading": "Questions to ask", "items": ["What pre-shipment finance do you offer for export orders?", "What documents and security do you need?", "How do you handle export payments?", "Can you work with export credit insurance (ECGC)?"] },
+      { "heading": "Read the official sources", "items": ["ECGC: ecgc.in", "EXIM Bank: eximbankindia.in", "SIDBI: sidbi.in", "DGFT Niryat Bandhu: dgft.gov.in"] }
+    ],
+    "closing": "Follow my account for more export business tips"
+  }
+}

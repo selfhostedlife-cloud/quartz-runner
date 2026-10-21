@@ -1,0 +1,54 @@
+{
+  "family": "case",
+  "keyword": "JUTE",
+  "slides": [
+    { "type": "cover", "title": "JUTE BAG\nEXPORT BUSINESS", "sub": "A practical **starter guide** for Indian exporters", "q": "jute bags eco shopping", "pick": 0 },
+    { "type": "case", "label": "WHY JUTE BAGS?", "q": "jute fibre natural", "bullets": [
+      "India is the **world's largest producer** of raw jute",
+      "Plastic bag rules abroad push buyers to **natural fibre**",
+      "Reusable shopping bags are a **growing use** for jute",
+      "Big retail chains have already **sourced bags from India**" ] },
+    { "type": "case", "label": "WHAT YOU CAN SELL", "q": "burlap sack hessian", "bullets": [
+      "**Shopping and tote bags** for grocery and fashion",
+      "**Gift and promo bags** with a printed logo",
+      "**Wine and bottle bags** for gift packs",
+      "**Hessian sacks** and packing material" ] },
+    { "type": "case", "label": "WHERE IT IS MADE", "imageId": 7048124, "bullets": [
+      "**West Bengal** grows most of India's raw jute",
+      "Most jute mills are also in **West Bengal**",
+      "Many small units stitch **finished bags**",
+      "Visit a unit or ask for **video proof** before ordering" ] },
+    { "type": "case", "label": "WHAT BUYERS CHECK", "q": "sewing workshop textile bags", "bullets": [
+      "**Fibre quality**, weave and stitching strength",
+      "**Colour and print** that stay consistent in bulk",
+      "A **sample first**, then the bulk order",
+      "**Labels and carton packing** that match the order",
+      "A **factory audit** when the buyer asks for one" ] },
+    { "type": "case", "label": "HOW TO START", "q": "shipping containers cargo", "bullets": [
+      "**Pick 2-3 bag styles** you can make well",
+      "**Find a maker** in a jute-belt cluster",
+      "**Make a sample set** with clear photos",
+      "**Confirm the HS code** and rules with your customs broker",
+      "**Send samples** to the buyers you shortlisted" ] },
+    { "type": "case", "label": "FIND YOUR BUYERS", "q": "retail store shopping bags", "bullets": [
+      "**Retail chains** and eco-friendly brands",
+      "**Gift and promo** companies",
+      "**Importers** who sell to shops",
+      "Check **trade fairs** for home, gift and lifestyle products" ] },
+    { "type": "cta", "title": "GET THE JUTE BAG EXPORT CHECKLIST", "q": "cargo port containers night", "text": "Inside: **sample set**, buyer **verification** and **shipping** steps.", "button": "COMMENT “JUTE”", "note": "I'll DM you the free PDF.\nFollow so it reaches you.", "pdfPreview": "pdf_preview.png" }
+  ],
+  "caption": {
+    "body": "Jute bag export business: a practical starter guide for Indian exporters.\n\nIndia is the world's largest producer of raw jute, and buyers abroad are looking for natural-fibre alternatives to plastic bags. That makes jute shopping bags, tote bags and gift bags a real product to explore.\n\nIn this post: why jute works, what you can sell, where the products are made, what buyers check, how to start with a small sample set, and where to find buyers. Always confirm the HS code, labelling and import rules for your target country with your customs broker before shipping.",
+    "hashtags": ["#export", "#jute", "#importexport", "#exportbusiness", "#sustainable"]
+  },
+  "leadmagnet": {
+    "title": "Jute Bag Export Checklist",
+    "subtitle": "From first sample to first shipment",
+    "sections": [
+      { "heading": "Choose and source", "items": ["Pick 2-3 bag styles (tote, gift, bottle bag)", "Shortlist 3 makers in a jute-belt cluster", "Ask each maker for samples and a price sheet", "Check stitching, handles and colour fastness yourself"] },
+      { "heading": "Prepare for buyers", "items": ["Photograph a full sample set on a plain background", "Write specs: size, weight, material, print method", "Decide your minimum order and lead time", "Confirm the HS code and labelling with your customs broker"] },
+      { "heading": "Verify and ship", "items": ["Check the buyer's company name, website and address", "Agree payment terms in writing before production", "Send a sample first and keep proof of delivery", "Pack in cartons that match the order and keep copies of all documents"] }
+    ],
+    "closing": "Follow my account for more export business tips"
+  }
+}

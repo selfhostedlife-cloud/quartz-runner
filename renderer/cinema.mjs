@@ -43,6 +43,13 @@ const GLYPH = {
   building: '<path d="M4 18L24 5l20 13zM8 40h32M6 44h36"/><path d="M12 20v18M20 20v18M28 20v18M36 20v18"/>',
   booth: '<path d="M5 20L9 7h30l4 13zM5 20q4.8 6 9.6 0q4.8 6 9.6 0q4.8 6 9.6 0q4.8 6 9.6 0"/><path d="M9 25v17h30V25M20 42V32h8v10"/>',
   shield: '<path d="M24 4l16 6v12c0 11-7 18-16 22C15 40 8 33 8 22V10z"/><path d="M16 24l6 6 11-12"/>',
+  doc: '<path d="M12 4h18l8 8v32H12z"/><path d="M30 4v8h8M18 22h14M18 30h14M18 38h8"/>',
+  ship: '<path d="M4 30h40l-6 12H10zM12 30V18h24v12M24 8v10"/>',
+  plane: '<path d="M24 4c3 0 4 3 4 6v10l16 10v4l-16-4v10l5 4v3l-9-2-9 2v-3l5-4V30l-16 4v-4l16-10V10c0-3 1-6 4-6z"/>',
+  box: '<path d="M6 16L24 6l18 10v20L24 46 6 36zM6 16l18 10 18-10M24 26v20"/>',
+  coin: '<circle cx="24" cy="24" r="18"/><path d="M30 17c-1-3-5-4-8-3s-4 4-1 6 7 2 8 5-3 5-7 5-6-2-7-4M24 10v4M24 34v4"/>',
+  people: '<circle cx="24" cy="15" r="7"/><path d="M8 42c0-9 7-14 16-14s16 5 16 14"/>',
+  tag: '<path d="M6 6h18l18 18-18 18L6 24z"/><circle cx="16" cy="16" r="3"/>',
 };
 const cloud = (icon) => `<svg class="cloud" viewBox="0 0 176 122"><defs><radialGradient id="cg" cx="50%" cy="40%" r="70%"><stop offset="0" stop-color="#fff" stop-opacity=".30"/><stop offset="1" stop-color="#FFD43B" stop-opacity=".07"/></radialGradient></defs>
   <path d="M46 104C20 104 6 86 12 66C16 50 32 44 46 48C50 24 76 12 98 22C114 8 144 16 148 42C168 46 174 76 156 92C148 102 136 104 126 104Z" fill="url(#cg)" stroke="#FFD43B" stroke-width="3" stroke-linejoin="round"/>
@@ -88,9 +95,12 @@ export function cineHtml(s, i, total, handle, bg, avatar, H = 1350, pdf = '') {
       <div style="position:absolute;left:46px;right:46px;top:${avatar ? 415 : 200}px;text-align:center">
         <div class="gold" style="font-size:108px">${esc(s.title)}</div>
         <div style="margin-top:22px;font-size:41px;line-height:1.28;font-weight:600;color:#fff">${mk(s.text || '')}</div>
-        <div style="margin-right:168px"><div style="position:relative;margin:48px auto 0;display:inline-block;border:4px solid #FFD43B;border-radius:18px;padding:18px 44px;background:rgba(0,0,0,.55);box-shadow:0 0 26px rgba(255,212,59,.35)"><span class="white" style="font-size:60px">${esc(s.button || 'Comment BELOW')}</span>${snap}</div>
-        <div style="margin-top:34px;font-size:34px;color:#e6e6e6;font-weight:600">${mk(s.note || "I'll personally send you the details via DM.").replace(/\n/g, '<br>')}</div></div>
+        <div style="margin-right:168px;margin-top:48px"><div style="display:inline-block;max-width:100%"><div style="position:relative;border:4px solid #FFD43B;border-radius:18px;padding:18px 44px;background:rgba(0,0,0,.55);box-shadow:0 0 26px rgba(255,212,59,.35)"><span class="white" style="font-size:60px;white-space:nowrap">${esc(s.button || 'Comment BELOW')}</span>${snap}</div>
+        <div style="width:0;min-width:100%;margin-top:34px;font-size:34px;color:#e6e6e6;font-weight:600">${mk(s.note || "I'll personally send you the details via DM.").replace(/\n/g, '<br>')}</div></div></div>
       </div>${foot()}`;
   }
   return `<!doctype html><html><head><meta charset="utf-8"><style>${css(H)}</style></head><body>${inner}</body></html>`;
 }
+
+// shared pieces for the other blueprint families (families.mjs)
+export { css as cineCss, topbar, topShade, foot as cineFoot, mk, esc, fitSize, GLYPH, GOLD, FOLLOW };
