@@ -817,6 +817,20 @@ function flushReference() {
   state.refBuf = null; save();
   bg(startReference(b).catch((e) => say('Reference job failed: ' + e.message)));
 }
+// posts dropped into <data>/inbox/*.json by the laptop are registered here, inside the run that owns the state (editing state.json from outside gets overwritten by the run's own save)
+async function ingestInbox() {
+  const d = path.join(dataDir, 'inbox'); let files = [];
+  try { files = fs.readdirSync(d).filter((f) => f.endsWith('.json')); } catch { return; }
+  for (const f of files) {
+    const fp = path.join(d, f); let o = null;
+    try { o = JSON.parse(fs.readFileSync(fp, 'utf8')); } catch { /* bad file */ }
+    try { fs.unlinkSync(fp); } catch { /* already gone */ }
+    if (!o || !o.id || state.posts.some((p) => p.id === o.id)) continue;
+    const post = Object.assign({ dir: path.join(root, 'out', 'posts', o.id), status: 'awaiting_approval', kind: 'reference', look: 'v2', createdAt: new Date().toISOString() }, o, { no: ++state.seq });
+    state.posts.push(post); save();
+    await sendPreview(post);
+  }
+}
 async function runTick() {
   const deadline = Date.now() + Number(process.env.TICK_SECONDS || 270) * 1000;
   log('cloud run started; paired chats:', Object.keys(state.chats).join(',') || 'none');
@@ -833,6 +847,7 @@ async function runTick() {
   while (Date.now() < deadline || bgTasks.size) {
     for (const who of ['main', 'test', 'fb']) await pollOnce(who, 6);
     flushReference();
+    await ingestInbox();
     if (Date.now() - lastWatch > 120e3) { await goLiveWatcher(); await musicReminders(); lastWatch = Date.now(); }
     if (dirty && Date.now() - lastPersist > 15e3) { dirty = false; lastPersist = Date.now(); const r = persist('studio state'); if (r.error) log('persist:', r.error); }
     if (Date.now() > deadline + 50 * 60e3) { log('giving up on background jobs after 50 min'); break; }
