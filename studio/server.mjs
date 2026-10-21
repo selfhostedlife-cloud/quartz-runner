@@ -261,9 +261,42 @@ Return JSON: {"title":"","text":"","items":[],"teaser":""} (teaser max 6 words; 
 const STYLE_KEYS = ['titleColor', 'bodyColor', 'accent', 'accent2', 'ink', 'tagText', 'pillColor', 'pillTextColor', 'titleSize', 'bodySize', 'lineGap', 'font', 'upper'];
 const EDIT_FONTS = ['Archivo Black', 'Poppins', 'Montserrat', 'Inter', 'Bebas Neue', 'DM Serif Display', 'Anton', 'Rubik', 'Fraunces', 'Space Mono'];
 const isHex = (v) => /^#[0-9a-f]{3,8}$/i.test(String(v || ''));
+// V2 posts (blueprint families + cine): slides are {type,title,sub,label,bullets,items,text,button,note,q|imageId}; the owner's request is turned into a patch of those fields
+const V2_FIELDS = ['title', 'sub', 'label', 'bullets', 'items', 'text', 'button', 'note', 'q', 'imageId'];
+async function editV2(post, spec, scope, instruction) {
+  const idxs = scope === 'all' ? spec.slides.map((_, i) => i) : [Number(scope) - 1];
+  const view = idxs.map((i) => { const x = spec.slides[i]; const o = { n: i + 1 }; for (const k of [...V2_FIELDS, 'style']) if (x[k] != null) o[k] = x[k]; return o; });
+  const out = await gemini(`You edit slides of an Instagram carousel for Indian exporters, exactly as the owner asks. Slide type: ${spec.family || 'cine'} template.
+OWNER'S REQUEST: ${instruction}
+SLIDES YOU MAY CHANGE: ${JSON.stringify(view)}
+Markup inside text: **x** = gold highlight, ==x== = highlight, newline = line break, ^ at line start in a cover title = coloured line.
+Return JSON only: {"slides":{"<n>":{ ONLY the fields that change, same shape as above }},"summary":"one short sentence","cannot":""}
+Allowed fields: title, sub, label, bullets (array of strings), items (array, keep each item's keys), text, button, note, q (2-4 English keywords for a NEW photo, only if the owner asks to change the picture), style {"titleColor":"#RRGGBB" (white headline/name text),"accentColor":"#RRGGBB" (gold/yellow text)} for colour requests.
+Rules: plain easy English, no new facts or numbers, no duty/GST/licence claims. Size, spacing and layout are fixed by the template: if the owner asks only for that, set "cannot" to a short reason and say what you can do instead. Never return empty strings for fields that should stay.`);
+  if (!out) throw new Error('no answer came back (Gemini quota?)');
+  const patch = out.slides || {}; const changed = [];
+  const sizesOk = (k, v) => (k === 'bullets' ? Array.isArray(v) && v.length : k === 'items' ? Array.isArray(v) && v.length : typeof v === 'string' ? v.trim() : k === 'style' ? v && typeof v === 'object' : true);
+  for (const fn of ['spec.json', 'spec.pre-look.json']) {
+    const file = path.join(post.dir, fn); const sp = readJson(file, null); if (!sp?.slides) continue;
+    for (const [n, p] of Object.entries(patch)) { const sl = sp.slides[Number(n) - 1]; if (!sl || !idxs.includes(Number(n) - 1)) continue;
+      for (const k of [...V2_FIELDS, 'style']) { if (p[k] == null || !sizesOk(k, p[k])) continue;
+        if (k === 'style') { const st = {}; for (const c of ['titleColor', 'accentColor']) if (isHex(p.style[c])) st[c] = p.style[c]; if (Object.keys(st).length) sl.style = { ...(sl.style || {}), ...st }; else continue; }
+        else sl[k] = p[k];
+        if (k === 'q') { delete sl.imageId; delete sl.pick; }
+        if (fn === 'spec.json' && !changed.includes(Number(n))) changed.push(Number(n)); } }
+    fs.writeFileSync(file, JSON.stringify(sp, null, 2));
+  }
+  if (!changed.length) throw new Error(out.cannot || 'I could not turn that into a change to the words, photo or colours of this slide. Size and layout are fixed by the template of this post. Try e.g. /edit ' + post.no + ' 2 change the title to ... or make the photo show a port');
+  for (const n of changed) if (patch[n]?.q) for (const x of ['img_' + String(n).padStart(2, '0') + '.jpg']) try { fs.unlinkSync(path.join(post.dir, x)); } catch { /* none */ }
+  for (const n of changed) { const r = await run('../renderer/render.mjs', [path.join(post.dir, 'spec.json'), post.dir, '--only', String(n), '--keep-photos'], 8 * 60e3); if (r.code !== 0) throw new Error(r.err.slice(-200)); }
+  if (scope === 'all' || changed.length > 1) await sendPreview(post);
+  else await tg.sendPhoto(state.chatId, path.join(post.dir, 'slide_' + String(changed[0]).padStart(2, '0') + '.jpg'), '#' + post.no + ' slide ' + changed[0] + ': ' + (out.summary || 'changed'), { inline_keyboard: [[{ text: 'Approve', callback_data: 'a:' + post.no }, { text: 'Reject', callback_data: 'r:' + post.no }]] });
+  return { no: post.no, scope, summary: out.summary, changed };
+}
 async function editSlides(post, scope, instruction) {
   const specFile = path.join(post.dir, 'spec.json'); const spec = readJson(specFile, null);
   if (!spec?.slides?.length) throw new Error('post #' + post.no + ' has no slides');
+  if (spec.family || spec.template === 'cine') { if (scope !== 'all' && !spec.slides[Number(scope) - 1]) throw new Error('post #' + post.no + ' has no slide ' + scope + ' (it has ' + spec.slides.length + ')'); return editV2(post, spec, scope, instruction); }
   const idxs = scope === 'all' ? spec.slides.map((_, i) => i) : [Number(scope) - 1];
   if (idxs.some((i) => !spec.slides[i])) throw new Error('post #' + post.no + ' has no slide ' + scope + ' (it has ' + spec.slides.length + ')');
   const cur = spec.slides[idxs[0]];

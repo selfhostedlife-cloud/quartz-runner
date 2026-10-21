@@ -10,6 +10,7 @@ import { judgePhoto, suggestQueries } from './photojudge.mjs';
 import { GRAPHIC_BANDS, THEME_VARS, FONT_IMPORT, layoutCss, layoutHtml } from './layouts.mjs';
 import { winnerHtml } from './winner.mjs';
 import { cineHtml } from './cinema.mjs';
+import { familyHtml } from './families.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, '..');
@@ -153,6 +154,7 @@ mark.o{background:#FF5A00;color:#fff}
 // the file lives in the PRIVATE data repo (studio/data/avatar.png; the runner repo is public); brand/avatar.png is a local-only fallback
 const AVATAR = (() => { for (const f of [path.join(root, 'studio', 'data', 'avatar.png'), path.join(root, 'brand', 'avatar.png'), path.join(root, '..', 'store', 'studio-data', 'avatar.png')]) { try { return dataUri(f); } catch { /* try next */ } } return ''; })();
 function slideHtml(s, i, total, handle, imgFile) {
+  if (globalThis.FAMILY) { const pf = s.pdfPreview ? path.resolve(globalThis.SPEC_DIR || '.', s.pdfPreview) : null; const h = familyHtml(s.family || globalThis.FAMILY, s, i, total, { handle, bg: imgFile ? dataUri(imgFile) : '', avatar: AVATAR, pdf: pf && fs.existsSync(pf) ? dataUri(pf) : '', H: globalThis.SLIDE_H || 1350 }); return h; } // V2 blueprint families (panel/case/guide/table/cine)
   if (globalThis.CINE) return cineHtml(s, i, total, handle, imgFile ? dataUri(imgFile) : '', AVATAR, globalThis.SLIDE_H || H, (() => { const pf = s.pdfPreview ? path.resolve(globalThis.SPEC_DIR || '.', s.pdfPreview) : null; return pf && fs.existsSync(pf) ? dataUri(pf) : ''; })()); // 4:5 cinematic template (cinema.mjs) draws its own avatar on the CTA
   const h = slideHtmlBase(s, i, total, handle, imgFile);
   if (s.type !== 'cta' || !AVATAR) return h;
@@ -251,7 +253,8 @@ globalThis.SPEC_DIR = path.dirname(path.resolve(specPath));
 globalThis.SPEC_STYLE = spec.style || null;
 globalThis.TEMPLATE = ['guide', 'math', 'verdict'].includes(spec.template) ? spec.template : null;
 globalThis.CINE = spec.template === 'cine';
-globalThis.SLIDE_H = spec.height || H;
+globalThis.FAMILY = spec.family || null;
+globalThis.SLIDE_H = spec.height || (spec.family ? 1350 : H);
 globalThis.PT = spec.photoTheme || null; // { ink:'#RRGGBB', accent, accent2, tagText, font, upper }
 fs.mkdirSync(outDir, { recursive: true });
 const handle = brand.handle; // one handle on every slide, for both accounts (owner rule 2026-10-13): never the per-spec value
@@ -271,7 +274,12 @@ for (let i = 0; i < spec.slides.length; i++) {
   let imgFile = null;
   const q = s.imageQueries || s.imageQuery || s.imagePrompt; const fileN = path.join(outDir, `img_${String(i + 1).padStart(2, '0')}.jpg`);
   const wantsPhoto = s.photo !== false && !s.layout;
-  if (wantsPhoto && process.argv.includes('--keep-photos')) imgFile = fs.existsSync(fileN) ? fileN : null; // re-render only: reuse the photos already chosen, no new picks, no Gemini
+  if (globalThis.FAMILY) { // V2: photo = Pixabay id or query (s.pick = n-th hit); reuse the saved img_NN.jpg unless the slide's photo was changed
+    if (fs.existsSync(fileN) && process.argv.includes('--keep-photos')) imgFile = fileN;
+    else if (s.imageId) imgFile = await getPhotoById(s.imageId, fileN);
+    else if (s.q) imgFile = await getPhoto(s.q, fileN, true, s.pick || 0);
+  }
+  else if (wantsPhoto && process.argv.includes('--keep-photos')) imgFile = fs.existsSync(fileN) ? fileN : null; // re-render only: reuse the photos already chosen, no new picks, no Gemini
   else if (wantsPhoto && s.imageId) imgFile = await getPhotoById(s.imageId, fileN);
   else if (wantsPhoto && q) {
     const judged = process.argv.includes('--no-judge') || s.imageSkip ? undefined : (fs.existsSync(fileN) && !fs.existsSync(fileN + '.nophoto') ? fileN : await getJudgedPhoto(s, spec.topic || spec.slides[0]?.title || '', [...(aiQ[i] || []), ...(Array.isArray(q) ? q : [q])], fileN, s.type === 'cover' || s.type === 'cta'));
@@ -281,6 +289,10 @@ for (let i = 0; i < spec.slides.length; i++) {
   }
   await page.setContent(slideHtml(s, i, spec.slides.length, handle, imgFile), { waitUntil: 'networkidle' });
   await page.evaluate(() => document.fonts.ready);
+  if (globalThis.FAMILY && (s.style?.titleColor || s.style?.accentColor)) await page.evaluate((st) => { // owner colour request: white text -> titleColor, gold text -> accentColor (handle, swipe pill and footer stay)
+    const gold = (c) => /^rgb(255, (2[0-3]d|19d), (d{1,2}|1[0-3]d))$/.test(c);
+    for (const el of document.querySelectorAll('body *')) { if (el.closest('.top,.foot,.swipe,.pill')) continue; const c = getComputedStyle(el).color; if (st.titleColor && c === 'rgb(255, 255, 255)') el.style.setProperty('color', st.titleColor, 'important'); else if (st.accentColor && gold(c)) el.style.setProperty('color', st.accentColor, 'important'); }
+  }, s.style);
   await page.evaluate(() => { /* autoFit */
     for (const w of document.querySelectorAll('.wrap')) {
       if (getComputedStyle(w).bottom === 'auto') continue;
