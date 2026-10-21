@@ -22,7 +22,11 @@ async function tfetch(url, opts = {}, tries = 5) {
   throw last;
 }
 
-export function makeBot(TOKEN) {
+// every outgoing message/photo/album caption goes to this hook (server.mjs writes it to the chat log)
+let outLog = () => {};
+export const setOutLogger = (fn) => { outLog = fn; };
+
+export function makeBot(TOKEN, name = 'main') {
   const base = () => `https://api.telegram.org/bot${TOKEN}`;
   async function call(method, body) {
     const r = await tfetch(`${base()}/${method}`, { longPoll: method === 'getUpdates', method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
@@ -40,12 +44,13 @@ export function makeBot(TOKEN) {
   return {
     hasToken: () => !!TOKEN,
     setCommands: (commands) => call('setMyCommands', { commands }),
-    sendMessage: (chat_id, text, extra = {}) => call('sendMessage', { chat_id, text: String(text).slice(0, 4000), disable_web_page_preview: true, ...extra }),
+    sendMessage: (chat_id, text, extra = {}) => (outLog(name, text), 0) || call('sendMessage', { chat_id, text: String(text).slice(0, 4000), disable_web_page_preview: true, ...extra }),
     answerCallback: (id, text = '') => call('answerCallbackQuery', { callback_query_id: id, text: text.slice(0, 190) }),
     editMarkup: (chat_id, message_id, reply_markup) => call('editMessageReplyMarkup', { chat_id, message_id, reply_markup }).catch(() => null),
     getUpdates: (offset, timeout = 25) => call('getUpdates', { offset, timeout, allowed_updates: ['message', 'callback_query'] }),
     // Sends 2-10 local images as one album; caption goes on the first image.
     sendAlbum(chat_id, files, caption = '') {
+      outLog(name, caption);
       const fd = new FormData();
       fd.append('chat_id', String(chat_id));
       fd.append('media', JSON.stringify(files.map((f, i) => ({ type: 'photo', media: `attach://p${i}`, ...(i === 0 && caption ? { caption: caption.slice(0, 1000) } : {}) }))));
@@ -53,6 +58,7 @@ export function makeBot(TOKEN) {
       return upload('sendMediaGroup', fd);
     },
     sendPhoto(chat_id, file, caption = '', reply_markup) {
+      outLog(name, caption);
       const fd = new FormData();
       fd.append('chat_id', String(chat_id));
       if (caption) fd.append('caption', caption.slice(0, 1000));
@@ -80,6 +86,6 @@ export function makeBot(TOKEN) {
 }
 
 export const mainBot = makeBot(process.env.TELEGRAM_BOT_TOKEN);
-export const testBot = makeBot(process.env.TELEGRAM_BOT_TOKEN_TEST);
-export const fbBot = makeBot(process.env.TELEGRAM_BOT_TOKEN_FB); // Facebook page "Faizan Ali Shahji": its captions, queue and go-live alerts
+export const testBot = makeBot(process.env.TELEGRAM_BOT_TOKEN_TEST, 'test');
+export const fbBot = makeBot(process.env.TELEGRAM_BOT_TOKEN_FB, 'fb'); // Facebook page "Faizan Ali Shahji": its captions, queue and go-live alerts
 export const { hasToken, sendMessage, answerCallback, editMarkup, getUpdates, sendAlbum, sendPhoto, sendDocument, downloadFile } = mainBot;

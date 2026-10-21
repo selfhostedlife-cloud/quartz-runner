@@ -44,6 +44,17 @@ const bgTasks = new Set();
 const bg = (p) => { const q = Promise.resolve(p).catch(() => {}); bgTasks.add(q); q.finally(() => bgTasks.delete(q)); return p; };
 const byNo = (n) => state.posts.find((p) => p.no === Number(n));
 const BOTS = { main: tg.mainBot, test: tg.testBot, fb: tg.fbBot };
+// chat log (private data repo): every owner message, button tap and bot reply, so a problem can be diagnosed from what was really said (secrets masked)
+const chatLogFile = path.join(dataDir, 'chat-log.jsonl');
+function chatLog(who, dir, text) {
+  try {
+    const t = String(text || '').replace(/\b(?:AIza|sk-|ghp_|github_pat_)[\w-]{10,}|\b\d{8,12}:[\w-]{30,}|\b[A-Za-z0-9_-]{32,}\b/g, '[masked]').slice(0, 1500);
+    if (!t) return;
+    fs.appendFileSync(chatLogFile, JSON.stringify({ at: new Date().toISOString(), who, dir, text: t }) + '\n'); dirty = true;
+    const lines = fs.readFileSync(chatLogFile, 'utf8').split('\n'); if (lines.length > 900) fs.writeFileSync(chatLogFile, lines.slice(-600).join('\n'));
+  } catch { /* logging must never break the bot */ }
+}
+tg.setOutLogger((who, text) => chatLog(who, 'out', text));
 state.chats ||= {}; if (state.chatId && !state.chats.main) state.chats.main = state.chatId;
 // the Facebook bot talks to the same owner chat as the main bot (same person; the owner only has to press Start once in the Facebook bot)
 if (!state.chats.fb && state.chats.main && BOTS.fb.hasToken()) state.chats.fb = state.chats.main;
@@ -486,7 +497,7 @@ async function pollLoop(who = 'main') {
       for (const u of updates) {
         state.offsets[who] = u.update_id + 1;
         try { if (u.callback_query) { u.callback_query._who = who; await onCallback(u.callback_query); } else if (u.message) await onMessage(u.message, who); }
-        catch (e) { log('handler error:', e.message); }
+        catch (e) { log('handler error:', e.message); chatLog(who, 'err', e.message); }
       }
       if (updates.length) save();
     } catch (e) { log('poll error:', e.message); await sleep(e.message.includes('Conflict') ? 30000 : 5000); }
@@ -838,8 +849,10 @@ async function pollOnce(who, timeout = 0) {
     const updates = await bot.getUpdates(state.offsets[who] || 0, timeout);
     for (const u of updates) {
       state.offsets[who] = u.update_id + 1;
+      if (u.message) chatLog(who, 'in', u.message.text || u.message.caption || (u.message.photo ? '[photo]' : '[other]'));
+      if (u.callback_query) chatLog(who, 'tap', u.callback_query.data);
       try { if (u.callback_query) { u.callback_query._who = who; await onCallback(u.callback_query); } else if (u.message) await onMessage(u.message, who); }
-      catch (e) { log('handler error:', e.message); }
+      catch (e) { log('handler error:', e.message); chatLog(who, 'err', e.message); }
     }
     if (updates.length) save();
     return updates.length;
