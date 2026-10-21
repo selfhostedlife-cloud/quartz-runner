@@ -290,7 +290,7 @@ Rules: plain easy English, no new facts or numbers, no duty/GST/licence claims. 
   for (const n of changed) if (patch[n]?.q) for (const x of ['img_' + String(n).padStart(2, '0') + '.jpg']) try { fs.unlinkSync(path.join(post.dir, x)); } catch { /* none */ }
   for (const n of changed) { const r = await run('../renderer/render.mjs', [path.join(post.dir, 'spec.json'), post.dir, '--only', String(n), '--keep-photos'], 8 * 60e3); if (r.code !== 0) throw new Error(r.err.slice(-200)); }
   if (scope === 'all' || changed.length > 1) await sendPreview(post);
-  else await tg.sendPhoto(state.chatId, path.join(post.dir, 'slide_' + String(changed[0]).padStart(2, '0') + '.jpg'), '#' + post.no + ' slide ' + changed[0] + ': ' + (out.summary || 'changed'), { inline_keyboard: [[{ text: 'Approve', callback_data: 'a:' + post.no }, { text: 'Reject', callback_data: 'r:' + post.no }]] });
+  else await tg.sendPhoto(state.chatId, path.join(post.dir, 'slide_' + String(changed[0]).padStart(2, '0') + '.jpg'), '#' + post.no + ' slide ' + changed[0] + ': ' + (out.summary || 'changed') + '\nApplied: ' + Object.keys(patch[changed[0]] || {}).join(', ') + (patch[changed[0]]?.q ? ' (photo search: "' + patch[changed[0]].q + '")' : '') + (out.cannot ? '\nNot done: ' + out.cannot : '') + '\nNot what you asked? Send /edit ' + post.no + ' ' + changed[0] + ' <the exact change>', { inline_keyboard: [[{ text: 'Approve', callback_data: 'a:' + post.no }, { text: 'Reject', callback_data: 'r:' + post.no }]] });
   return { no: post.no, scope, summary: out.summary, changed };
 }
 async function editSlides(post, scope, instruction) {
