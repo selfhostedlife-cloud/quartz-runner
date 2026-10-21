@@ -153,7 +153,7 @@ mark.o{background:#FF5A00;color:#fff}
 // the file lives in the PRIVATE data repo (studio/data/avatar.png; the runner repo is public); brand/avatar.png is a local-only fallback
 const AVATAR = (() => { for (const f of [path.join(root, 'studio', 'data', 'avatar.png'), path.join(root, 'brand', 'avatar.png'), path.join(root, '..', 'store', 'studio-data', 'avatar.png')]) { try { return dataUri(f); } catch { /* try next */ } } return ''; })();
 function slideHtml(s, i, total, handle, imgFile) {
-  if (globalThis.CINE) return cineHtml(s, i, total, handle, imgFile ? dataUri(imgFile) : '', AVATAR, globalThis.SLIDE_H || H); // 4:5 cinematic template (cinema.mjs) draws its own avatar on the CTA
+  if (globalThis.CINE) return cineHtml(s, i, total, handle, imgFile ? dataUri(imgFile) : '', AVATAR, globalThis.SLIDE_H || H, (() => { const pf = s.pdfPreview ? path.resolve(globalThis.SPEC_DIR || '.', s.pdfPreview) : null; return pf && fs.existsSync(pf) ? dataUri(pf) : ''; })()); // 4:5 cinematic template (cinema.mjs) draws its own avatar on the CTA
   const h = slideHtmlBase(s, i, total, handle, imgFile);
   if (s.type !== 'cta' || !AVATAR) return h;
   // the PNG has an opaque white square around the ring: crop it to the ring's circle (ring centre 284,270 of 578x537; scaled to 206px wide)
