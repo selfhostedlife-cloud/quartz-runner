@@ -25,7 +25,7 @@ const avatarFile = ROOT + 'store/studio-data/avatar.png';
 const avatar = fs.existsSync(avatarFile) ? dataUri(avatarFile) : '';
 
 async function photo(s) {
-  if (s.commonsFile) { const c = await fetchCommonsFile(s.commonsFile, CACHE); if (!credits.includes(c.credit)) credits.push(c.credit); return dataUri(c.file); } // licensed photo of a public figure
+  if (s.commonsFile) { const c = await fetchCommonsFile(s.commonsFile, CACHE); const cr = s.commonsCredit || c.credit; if (!credits.includes(cr)) credits.push(cr); return dataUri(c.file); } // licensed photo of a public figure
   if (!s.q && !s.imageId) return '';
   const key = s.imageId ? 'id' + s.imageId : s.q.replace(/\W+/g, '_') + '_' + (s.pick || 0);
   const f = CACHE + key + '.jpg';

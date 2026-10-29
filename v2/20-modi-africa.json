@@ -1,0 +1,131 @@
+{
+  "family": "panel",
+  "keyword": "AFRICA",
+  "slides": [
+    {
+      "type": "cover",
+      "title": "10 PRODUCT GROUPS\n^{y|INDIA} SELLS\n^TO {y|AFRICA}",
+      "sub": "Ideas for exporters looking at **African markets**",
+      "family": "panel",
+      "commonsFile": "File:Prime Minister of Bharat, Shri Narendra Damodardas Modi welcomes the President of South Africa, Mr. Cyril Ramaphosa at Bharat Mandapam.jpg",
+      "commonsCredit": "Photo: Government of India (GODL-India), via Wikimedia Commons"
+    },
+    {
+      "type": "list",
+      "label": "EVERYDAY DEMAND",
+      "q": "rice sacks grain market",
+      "items": [
+        {
+          "n": "01.",
+          "name": "Pharmaceuticals",
+          "tag": "Healthcare • Essentials"
+        },
+        {
+          "n": "02.",
+          "name": "Rice",
+          "tag": "Staples • Repeat orders"
+        },
+        {
+          "n": "03.",
+          "name": "Sugar",
+          "tag": "Food • Processing"
+        },
+        {
+          "n": "04.",
+          "name": "Textiles and garments",
+          "tag": "Fashion • Retail"
+        },
+        {
+          "n": "05.",
+          "name": "Plastic products",
+          "tag": "Packaging • Household"
+        }
+      ]
+    },
+    {
+      "type": "list",
+      "label": "GROWTH SECTORS",
+      "q": "trucks vehicles machinery heavy",
+      "items": [
+        {
+          "n": "06.",
+          "name": "Automobiles",
+          "tag": "Vehicles • Transport"
+        },
+        {
+          "n": "07.",
+          "name": "Auto parts",
+          "tag": "Spares • Aftermarket"
+        },
+        {
+          "n": "08.",
+          "name": "Machinery",
+          "tag": "Industry • Farming"
+        },
+        {
+          "n": "09.",
+          "name": "Telecom equipment",
+          "tag": "Phones • Networks"
+        },
+        {
+          "n": "10.",
+          "name": "Steel products",
+          "tag": "Construction • Fabrication"
+        }
+      ]
+    },
+    {
+      "type": "cta",
+      "title": "GET THE AFRICA EXPORT CHECKLIST",
+      "q": "cargo port containers night",
+      "text": "Inside: **how to pick a market**, check buyers and plan payment.",
+      "button": "COMMENT “AFRICA”",
+      "note": "I'll DM you the free PDF.\nFollow so it reaches you.",
+      "pdfPreview": "pdf_preview.png"
+    }
+  ],
+  "caption": {
+    "body": "10 product groups India sells to Africa.\n\nIndia's exports to Africa include medicines, rice, sugar, textiles, vehicles and parts, machinery and telecom equipment. Africa is many different markets, so do not treat it as one. Pick a country, study its import data, and check payment risk before you ship.\n\nUse this list as a research starting point. Verify demand for your exact product and the import rules of your target country before committing.",
+    "hashtags": [
+      "#export",
+      "#africa",
+      "#importexport",
+      "#exportbusiness",
+      "#globaltrade"
+    ]
+  },
+  "leadmagnet": {
+    "title": "Africa Export Checklist",
+    "subtitle": "Choose a market, check the buyer, plan payment",
+    "sections": [
+      {
+        "heading": "Pick a market",
+        "items": [
+          "Choose 1-2 countries, not the whole continent",
+          "Check import data for your HS code",
+          "Check the main ports and shipping routes",
+          "Learn the local language and business culture basics"
+        ]
+      },
+      {
+        "heading": "Check the buyer",
+        "items": [
+          "Verify company registration and address",
+          "Ask for a trade reference",
+          "Search the company name with the word scam",
+          "Prefer secure payment terms for first orders"
+        ]
+      },
+      {
+        "heading": "Before you ship",
+        "items": [
+          "Confirm import rules and labelling with your customs broker",
+          "Check export credit insurance options (ECGC)",
+          "Agree Incoterms and payment terms in writing",
+          "Keep copies of all documents"
+        ]
+      }
+    ],
+    "closing": "Follow my account for more export business tips"
+  }
+}
