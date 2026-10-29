@@ -884,6 +884,7 @@ async function ingestInbox() {
     try { o = JSON.parse(fs.readFileSync(fp, 'utf8')); } catch { /* bad file */ }
     try { fs.unlinkSync(fp); } catch { /* already gone */ }
     if (o && o.sync) { await doInsightsSync().then((r) => log('inbox sync done, updated: ' + r.updated)).catch((e) => log('inbox sync error:', e.message)); continue; }
+    if (o && o.feed) { await runFeed().then((r) => log('inbox feed done, queued: ' + (r.fed || []).length + (r.note ? ' (' + r.note + ')' : ''))).catch((e) => log('inbox feed error:', e.message)); continue; }
     if (o && o.patch) { const p = state.posts.find((x) => x.id === o.patch); if (p) { Object.assign(p, o.fields || {}); save(); } continue; }
     if (o && o.resend) { const p = byNo(o.resend) || state.posts.find((x) => x.id === o.resend); if (p && p.status === 'awaiting_approval') { if (o.queued) { p.queuedResend = true; save(); } await sendPreview(p); } continue; }
     if (o && o.reject) { const old = state.posts.find((p) => p.id === o.reject); if (old && old.status === 'awaiting_approval') { old.status = 'rejected'; old.rejectReason = 'replaced by a revised version'; save(); } continue; }

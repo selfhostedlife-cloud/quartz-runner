@@ -13,7 +13,7 @@ import { stripFixedLines } from './caption.mjs';
 
 // Learning loop: a post is only put into Buffer when its slot is at most LOOKAHEAD_H hours away, so the choice (which approved post goes next)
 // always uses the newest results; the bank is ranked by the learned model, not first-in-first-out.
-const LOOKAHEAD_H = 48;
+const LOOKAHEAD_H = Number(process.env.LOOKAHEAD_H) || 24 * 14; // 2026-10-29 owner: queue every approved post (Buffer limit 10 per channel and the weekly cap of 10 still apply); was 48
 
 const KEY = fs.readFileSync((ROOT + '/.env'), 'utf8').match(/^BUFFER_API_KEY=(.*)$/m)[1].trim();
 const ORG = '5ab46e7a0b3b3a6f31ae27a4';
