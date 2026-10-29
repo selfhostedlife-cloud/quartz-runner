@@ -267,6 +267,22 @@ const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: W, height: globalThis.SLIDE_H } });
 const files = [];
 const onlyArg = process.argv.indexOf('--only'); const only = onlyArg > 0 ? Number(process.argv[onlyArg + 1]) - 1 : -1;
+async function origPhotoId(s) { // id of the photo v2build picked first for this slide (same query as v2build)
+  try { if (!s.q) return null; const r = await (await fetch('https://pixabay.com/api/?key=' + PIX_KEY + '&q=' + encodeURIComponent(s.q) + '&image_type=photo&orientation=horizontal&min_width=1000&per_page=20&safesearch=true')).json(); return (r.hits || [])[s.pick || 0]?.id || null; } catch { return null; }
+}
+async function swapPhoto(s, fileN) { // same listing as v2build (so index pick+N is the Nth alternative); never returns the current or first-built photo
+  const q = s.q || s.label || String(s.title || '').replace(/[\^*|{}]/g, ' ');
+  const cf = fileN + '.credit.json';
+  const avoid = new Set([fs.existsSync(cf) ? JSON.parse(fs.readFileSync(cf, 'utf8')).id : null, await origPhotoId({ ...s, q })].filter(Boolean));
+  const r = await (await fetch('https://pixabay.com/api/?key=' + PIX_KEY + '&q=' + encodeURIComponent(q) + '&image_type=photo&orientation=horizontal&min_width=1000&per_page=20&safesearch=true')).json();
+  const hits = (r.hits || []).filter((h) => !BAD_TAGS.test(h.tags));
+  const start = (s.pick || 0) + (s.imageSkip || 0);
+  const cand = hits.slice(start).concat(hits.slice(0, start)).filter((h) => !avoid.has(h.id))[0];
+  if (!cand) return getPhoto(q, fileN, true, start + 3);
+  fs.writeFileSync(fileN, Buffer.from(await (await fetch(cand.largeImageURL || cand.webformatURL)).arrayBuffer()));
+  fs.writeFileSync(cf, JSON.stringify({ source: 'Pixabay', id: cand.id, author: cand.user, page: cand.pageURL, query: q, tags: cand.tags, license: 'Pixabay License' }));
+  return fileN;
+}
 for (let i = 0; i < spec.slides.length; i++) {
   if (only >= 0 && i !== only) { files.push(path.join(outDir, `slide_${String(i + 1).padStart(2, '0')}.jpg`)); continue; }
   const s = spec.slides[i]; if (spec.font && !s.font) s.font = spec.font;
@@ -284,7 +300,7 @@ for (let i = 0; i < spec.slides.length; i++) {
       globalThis.AVOID_IDS = [];
       imgFile = judged || await getPhoto(s.q, fileN, true, s.pick || 0);
     }
-    else if (s.q || s.imageSkip) imgFile = await getPhoto(s.q || s.label || String(s.title || '').replace(/[\^*|{}]/g, ' '), fileN, true, (s.pick || 0) + (s.imageSkip || 0)); // Swap button: imageSkip steps to the next search hit
+    else if (s.q || s.imageSkip) imgFile = await swapPhoto(s, fileN); // Swap button: imageSkip steps to the next hit and never returns the photo it replaces
   }
   else if (wantsPhoto && process.argv.includes('--keep-photos')) imgFile = fs.existsSync(fileN) ? fileN : null; // re-render only: reuse the photos already chosen, no new picks, no Gemini
   else if (wantsPhoto && s.imageId) imgFile = await getPhotoById(s.imageId, fileN);

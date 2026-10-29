@@ -57,6 +57,8 @@ for (let i = 0; i < total; i++) {
   if (only && i + 1 !== only) continue;
   const s = spec.slides[i];
   const bg = await photo(s);
+  const ck = s.imageId ? 'id' + s.imageId : s.q ? s.q.replace(/W+/g, '_') + '_' + (s.pick || 0) : ''; // record which Pixabay photo is used, so the Swap button never returns it
+  if (ck && fs.existsSync(CACHE + ck + '.jpg.json')) { const m = JSON.parse(fs.readFileSync(CACHE + ck + '.jpg.json', 'utf8')); fs.writeFileSync(path.join(outDir, `img_${String(i + 1).padStart(2, '0')}.jpg.credit.json`), JSON.stringify({ source: 'Pixabay', id: m.id, author: m.user, page: m.page, tags: m.tags })); }
   const html = familyHtml(s.family || spec.family, s, i, total, { handle: spec.handle || '@faizanali.shahji', bg, avatar, pdf, H: 1350 });
   const page = await browser.newPage({ viewport: { width: 1080, height: 1350 } });
   await page.setContent(html, { waitUntil: 'networkidle' });
