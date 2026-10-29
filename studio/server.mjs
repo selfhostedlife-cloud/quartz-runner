@@ -281,7 +281,7 @@ async function editV2(post, spec, scope, instruction) {
   const out = await gemini(`You edit slides of an Instagram carousel for Indian exporters, exactly as the owner asks. Slide type: ${spec.family || 'cine'} template.
 OWNER'S REQUEST: ${instruction}
 SLIDES YOU MAY CHANGE: ${JSON.stringify(view)}
-Markup inside text: **x** = gold highlight, ==x== = highlight, newline = line break, ^ at line start in a cover title = coloured line.
+Markup inside text: **x** = gold highlight, ==x== = highlight, newline = line break, ^ at line start in a cover title = coloured line (lines without ^ are yellow, lines with ^ are white). To colour ONE WORD inside a cover title line use {w|word} for white or {y|word} for yellow, e.g. "10 PRODUCT {w|GROUPS}" or "^{y|EUROPE} BUYS"; keep every other word and line break exactly as it is.
 Return JSON only: {"slides":{"<n>":{ ONLY the fields that change, same shape as above }},"summary":"one short sentence","cannot":""}
 Allowed fields: title, sub, label, bullets (array of strings), items (array, keep each item's keys), text, button, note, q (2-4 English keywords for a NEW photo, only if the owner asks to change the picture), qAlt (2 more different searches for the same wish, array of strings), collage (array of 4-6 different Pixabay searches: ONLY when the owner wants several photos blended around the slide, e.g. a cinematic cover; the title text stays where it is), photoBrief (the owner's wish for the picture in one plain sentence, e.g. "a cargo port at dusk with a person using a laptop"), style {"titleColor":"#RRGGBB" (white headline/name text),"accentColor":"#RRGGBB" (gold/yellow text)} for colour requests.
 Rules: plain easy English, no new facts or numbers, no duty/GST/licence claims. Size, spacing and layout are fixed by the template: if the owner asks only for that, set "cannot" to a short reason and say what you can do instead. Never return empty strings for fields that should stay.`);
@@ -292,6 +292,7 @@ Rules: plain easy English, no new facts or numbers, no duty/GST/licence claims. 
     const file = path.join(post.dir, fn); const sp = readJson(file, null); if (!sp?.slides) continue;
     for (const [n, p] of Object.entries(patch)) { const sl = sp.slides[Number(n) - 1]; if (!sl || !idxs.includes(Number(n) - 1)) continue;
       for (const k of [...V2_FIELDS, 'style']) { if (p[k] == null || !sizesOk(k, p[k])) continue;
+        if (k !== 'style' && JSON.stringify(sl[k]) === JSON.stringify(p[k])) { if (fn === 'spec.json') p[k] = undefined; continue; } // identical to what is there: not a change (it used to be reported as "Applied")
         if (k === 'style') { const st = {}; for (const c of ['titleColor', 'accentColor']) if (isHex(p.style[c])) st[c] = p.style[c]; if (Object.keys(st).length) sl.style = { ...(sl.style || {}), ...st }; else continue; }
         else sl[k] = p[k];
         if (k === 'q') { delete sl.imageId; delete sl.pick; try { sl.avoidId = readJson(path.join(post.dir, 'img_' + String(n).padStart(2, '0') + '.jpg.credit.json'), {}).id || sl.avoidId; } catch { /* none */ } }
@@ -302,7 +303,7 @@ Rules: plain easy English, no new facts or numbers, no duty/GST/licence claims. 
   for (const n of changed) if (patch[n]?.q) for (const x of ['img_' + String(n).padStart(2, '0') + '.jpg']) try { fs.unlinkSync(path.join(post.dir, x)); } catch { /* none */ }
   for (const n of changed) { const r = await run('../renderer/render.mjs', [path.join(post.dir, 'spec.json'), post.dir, '--only', String(n), '--keep-photos'], 8 * 60e3); if (r.code !== 0) throw new Error(r.err.slice(-200)); }
   if (scope === 'all' || changed.length > 1) await sendPreview(post);
-  else await tg.sendPhoto(state.chatId, path.join(post.dir, 'slide_' + String(changed[0]).padStart(2, '0') + '.jpg'), '#' + post.no + ' slide ' + changed[0] + ': ' + (out.summary || 'changed') + '\nApplied: ' + Object.keys(patch[changed[0]] || {}).join(', ') + (patch[changed[0]]?.q ? ' (photo search: "' + patch[changed[0]].q + '")' : '') + (out.cannot ? '\nNot done: ' + out.cannot : '') + '\nNot what you asked? Send /edit ' + post.no + ' ' + changed[0] + ' <the exact change>', { inline_keyboard: [[{ text: 'Approve', callback_data: 'a:' + post.no }, { text: 'Reject', callback_data: 'r:' + post.no }]] });
+  else await tg.sendPhoto(state.chatId, path.join(post.dir, 'slide_' + String(changed[0]).padStart(2, '0') + '.jpg'), '#' + post.no + ' slide ' + changed[0] + ': ' + (out.summary || 'changed') + '\nApplied: ' + Object.keys(patch[changed[0]] || {}).filter((k) => patch[changed[0]][k] != null).join(', ') + (patch[changed[0]]?.q ? ' (photo search: "' + patch[changed[0]].q + '")' : '') + (out.cannot ? '\nNot done: ' + out.cannot : '') + '\nNot what you asked? Send /edit ' + post.no + ' ' + changed[0] + ' <the exact change>', { inline_keyboard: [[{ text: 'Approve', callback_data: 'a:' + post.no }, { text: 'Reject', callback_data: 'r:' + post.no }]] });
   return { no: post.no, scope, summary: out.summary, changed };
 }
 async function editSlides(post, scope, instruction) {

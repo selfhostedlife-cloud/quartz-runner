@@ -16,6 +16,10 @@ const page = (H, inner, extra = '') => `<!doctype html><html><head><meta charset
 const foot = (light) => `<div class="foot"><div class="shine"></div><div class="tx2" style="${light ? 'color:#2a3350' : ''}">${FOLLOW}</div></div>`;
 const bgPhoto = (bg, h, filter = '') => `<div class="photo" style="height:${h}px;${bg ? `background-image:url(${bg})` : 'background:linear-gradient(135deg,#222,#000)'};${filter}"></div>`;
 
+// inside a cover title line, {w|word} forces one word to white and {y|word} to yellow (the line's own colour applies to the rest)
+function wordColours(t) {
+  return String(t).split(/(\{[wy]\|[^}]*\})/).map((p) => { const m = p.match(/^\{([wy])\|([^}]*)\}$/); return m ? `<span style="color:${m[1] === 'w' ? '#fff' : YEL}">${esc(m[2])}</span>` : esc(p); }).join('');
+}
 // ---------- panel ----------
 function panel(s, i, total, handle, bg, H) {
   if (s.type === 'cover') {
@@ -25,7 +29,7 @@ function panel(s, i, total, handle, bg, H) {
     const collage = cl ? `<div style="position:absolute;inset:0;background:#05080d"></div>${tiles.map((t, k) => `<div style="position:absolute;left:${t[0]}px;top:${t[1]}px;width:${t[2]}px;height:${t[3]}px;background:url(${cl[k % cl.length]}) center/cover;filter:contrast(1.12) saturate(1.1) brightness(.92);-webkit-mask-image:radial-gradient(ellipse at center,#000 38%,rgba(0,0,0,.65) 58%,transparent 82%);mask-image:radial-gradient(ellipse at center,#000 38%,rgba(0,0,0,.65) 58%,transparent 82%)"></div>`).join('')}<div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,110,140,.30),rgba(255,140,40,.20));mix-blend-mode:soft-light"></div><div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 38%,rgba(0,0,0,0) 40%,rgba(0,0,0,.55) 100%)"></div>` : '';
     return page(H, `${cl ? collage : bgPhoto(bg, H)}<div class="fade" style="top:0;height:${H}px;background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(0,0,0,0) 28%,rgba(0,0,0,.55) 52%,rgba(0,0,0,.94) 78%,#000 100%)"></div><div class="vig"></div>${topShade}${topbar(handle)}
       <div style="position:absolute;left:30px;right:30px;bottom:150px;text-align:center">
-        ${lines.map((l) => { const w = l.startsWith('^'); const t = w ? l.slice(1) : l; return `<div class="${w ? 'white' : 'yel'}" style="font-size:${fitSize(t, w ? 104 : 128, 1010)}px;white-space:nowrap">${esc(t)}</div>`; }).join('')}
+        ${lines.map((l) => { const w = l.startsWith('^'); const t = w ? l.slice(1) : l; return `<div class="${w ? 'white' : 'yel'}" style="font-size:${fitSize(t.replace(/\{[wy]\|([^}]*)\}/g, '$1'), w ? 104 : 128, 1010)}px;white-space:nowrap">${wordColours(t)}</div>`; }).join('')}
         ${s.sub ? `<div class="shine" style="margin:20px 90px"></div><div style="font-size:40px;font-weight:700;line-height:1.22">${mk(s.sub)}</div>` : ''}
       </div>${foot()}`);
   }
