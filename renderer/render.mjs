@@ -276,14 +276,15 @@ for (let i = 0; i < spec.slides.length; i++) {
   const wantsPhoto = s.photo !== false && !s.layout;
   if (globalThis.FAMILY) { // V2: photo = Pixabay id or query (s.pick = n-th hit); reuse the saved img_NN.jpg unless the slide's photo was changed
     if (fs.existsSync(fileN) && process.argv.includes('--keep-photos')) imgFile = fileN;
-    else if (s.imageId) imgFile = await getPhotoById(s.imageId, fileN);
+    else if (s.commonsFile && !s.imageSkip) { const { fetchCommonsFile } = await import('../studio/commons.mjs'); const cd = path.join(process.env.TEMP || '/tmp', 'commons-cache'); fs.mkdirSync(cd, { recursive: true }); imgFile = (await fetchCommonsFile(s.commonsFile, cd)).file; } // licensed public-figure photo
+    else if (s.imageId && !s.imageSkip) imgFile = await getPhotoById(s.imageId, fileN);
     else if (s.photoBrief && s.q) { // owner asked for a specific photo: several searches, then Gemini vision picks the best fit to HIS words (never the photo it replaces)
       globalThis.AVOID_IDS = s.avoidId ? [s.avoidId] : [];
       let judged; try { judged = await getJudgedPhoto({ title: s.photoBrief }, s.photoBrief, [s.q, ...(s.qAlt || [])], fileN, true); } catch { judged = undefined; }
       globalThis.AVOID_IDS = [];
       imgFile = judged || await getPhoto(s.q, fileN, true, s.pick || 0);
     }
-    else if (s.q) imgFile = await getPhoto(s.q, fileN, true, s.pick || 0);
+    else if (s.q || s.imageSkip) imgFile = await getPhoto(s.q || s.label || String(s.title || '').replace(/[\^*|{}]/g, ' '), fileN, true, (s.pick || 0) + (s.imageSkip || 0)); // Swap button: imageSkip steps to the next search hit
   }
   else if (wantsPhoto && process.argv.includes('--keep-photos')) imgFile = fs.existsSync(fileN) ? fileN : null; // re-render only: reuse the photos already chosen, no new picks, no Gemini
   else if (wantsPhoto && s.imageId) imgFile = await getPhotoById(s.imageId, fileN);
