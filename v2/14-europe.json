@@ -1,0 +1,34 @@
+{
+  "family": "panel",
+  "keyword": "EUROPE",
+  "slides": [
+    { "type": "cover", "title": "10 PRODUCT GROUPS\n^EUROPE BUYS\n^FROM INDIA", "sub": "Ideas for exporters looking at **European markets**", "q": "european city old town street" },
+    { "type": "list", "label": "LIFESTYLE AND FOOD", "q": "spices market colourful", "items": [
+      { "n": "01.", "name": "Textiles and garments", "tag": "Apparel • Home linen" },
+      { "n": "02.", "name": "Spices and herbs", "tag": "Food • Natural" },
+      { "n": "03.", "name": "Tea and coffee", "tag": "Beverages • Packs" },
+      { "n": "04.", "name": "Leather and footwear", "tag": "Fashion • Accessories" },
+      { "n": "05.", "name": "Handicrafts and furniture", "tag": "Home • Decor" } ] },
+    { "type": "list", "label": "INDUSTRY AND HEALTH", "q": "laboratory pharmaceutical production", "items": [
+      { "n": "06.", "name": "Pharmaceuticals", "tag": "Medicines • Generics" },
+      { "n": "07.", "name": "Organic chemicals", "tag": "Industry • Intermediates" },
+      { "n": "08.", "name": "Machinery and parts", "tag": "Industry • Spares" },
+      { "n": "09.", "name": "Auto components", "tag": "Parts • Aftermarket" },
+      { "n": "10.", "name": "Seafood", "tag": "Frozen • Certified" } ] },
+    { "type": "cta", "title": "GET THE EUROPE EXPORT CHECKLIST", "q": "cargo port containers night", "text": "Inside: **pick a country**, check the buyer and plan payment.", "button": "COMMENT “EUROPE”", "note": "I'll DM you the free PDF.\nFollow so it reaches you.", "pdfPreview": "pdf_preview.png" }
+  ],
+  "caption": {
+    "body": "10 product groups Europe buys from India.\n\nEurope takes textiles, spices, tea, leather, handicrafts, medicines, chemicals, machinery, auto components and seafood from India. Each country has its own buyers and each product has its own standards. Pick one country and one product first, then check import data and the product rules.\n\nUse this list as a research starting point, not proof of demand.",
+    "hashtags": ["#export", "#europe", "#importexport", "#exportbusiness", "#globaltrade"]
+  },
+  "leadmagnet": {
+    "title": "Europe Export Checklist",
+    "subtitle": "Pick a country, check the buyer, plan payment",
+    "sections": [
+      { "heading": "Pick a country", "items": ["Choose one country first, not all of Europe", "Check import data for your HS code", "Check product standards and labelling for that country", "Find the main port and the shipping route"] },
+      { "heading": "Check the buyer", "items": ["Verify company registration and address", "Ask for a trade reference", "Search the company name with the word scam", "Prefer secure payment terms for first orders"] },
+      { "heading": "Before you ship", "items": ["Confirm import rules with your customs broker", "Check export credit insurance options (ECGC)", "Agree Incoterms and payment terms in writing", "Keep copies of all documents"] }
+    ],
+    "closing": "Follow my account for more export business tips"
+  }
+}

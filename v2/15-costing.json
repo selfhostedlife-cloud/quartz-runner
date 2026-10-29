@@ -1,0 +1,28 @@
+{
+  "family": "case",
+  "keyword": "COSTING",
+  "slides": [
+    { "type": "cover", "title": "FREE EXPORT\nCOSTING SHEET", "sub": "Work out your **real price** before you quote a buyer", "q": "calculator invoice desk" },
+    { "type": "case", "label": "WHAT YOU GET INSIDE", "q": "shipping containers port crane", "bullets": [
+      "**Step 1:** ex-factory cost and packing",
+      "**Step 2:** inland freight, port and CHA charges",
+      "**Step 3:** sea or air freight and insurance",
+      "**Step 4:** your margin and FOB / CIF price",
+      "**Step 5:** a quote check before you send it" ] },
+    { "type": "cta", "title": "GET THE EXPORT COSTING SHEET", "q": "cargo port containers night", "text": "Free for followers. **One PDF**, five steps.", "button": "COMMENT “COSTING”", "note": "I'll DM you the free PDF.\nFollow so it reaches you.", "pdfPreview": "pdf_preview.png" }
+  ],
+  "caption": {
+    "body": "Free export costing sheet: know your real price before you quote.\n\nMany first-time exporters quote a number that forgets packing, port charges, freight or insurance. This sheet walks you from ex-factory cost to your FOB and CIF price, step by step, so your margin is not a guess.\n\nIt is a planning sheet. Use your own quotes for freight and charges.",
+    "hashtags": ["#export", "#exportcosting", "#importexport", "#exportbusiness", "#freepdf"]
+  },
+  "leadmagnet": {
+    "title": "Export Costing Sheet",
+    "subtitle": "From ex-factory cost to your FOB and CIF price",
+    "sections": [
+      { "heading": "1. Your costs in India", "items": ["Ex-factory cost per unit", "Packing and labelling cost", "Inland transport to the port", "Port, CHA and documentation charges"] },
+      { "heading": "2. Shipping costs", "items": ["Get a freight quote for sea or air", "Add cargo insurance", "Note which Incoterm you are quoting (FOB, CIF)", "Add a small buffer for exchange-rate changes"] },
+      { "heading": "3. Price and check", "items": ["Add your margin per unit", "Calculate the FOB and CIF price", "Check the total against the buyer's target price", "Write the quote with its validity date"] }
+    ],
+    "closing": "Follow my account for more export business tips"
+  }
+}

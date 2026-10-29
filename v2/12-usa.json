@@ -1,0 +1,34 @@
+{
+  "family": "panel",
+  "keyword": "USA",
+  "slides": [
+    { "type": "cover", "title": "10 PRODUCT GROUPS\n^AMERICA BUYS\n^FROM INDIA", "sub": "Ideas for exporters looking at the **US market**", "q": "new york skyline business" },
+    { "type": "list", "label": "HIGH-VOLUME BASICS", "q": "pharmacy medicine tablets", "items": [
+      { "n": "01.", "name": "Pharmaceuticals", "tag": "Medicines • Generics" },
+      { "n": "02.", "name": "Gems and jewellery", "tag": "Diamonds • Gold" },
+      { "n": "03.", "name": "Textiles and garments", "tag": "Apparel • Home linen" },
+      { "n": "04.", "name": "Seafood", "tag": "Shrimp • Frozen" },
+      { "n": "05.", "name": "Organic chemicals", "tag": "Industry • Intermediates" } ] },
+    { "type": "list", "label": "MADE-IN-INDIA GROWTH", "q": "factory machinery engineering", "items": [
+      { "n": "06.", "name": "Electronics", "tag": "Phones • Components" },
+      { "n": "07.", "name": "Machinery", "tag": "Industry • Parts" },
+      { "n": "08.", "name": "Auto parts", "tag": "Spares • Aftermarket" },
+      { "n": "09.", "name": "Rice and spices", "tag": "Food • Ethnic retail" },
+      { "n": "10.", "name": "Handicrafts and furniture", "tag": "Home • Decor" } ] },
+    { "type": "cta", "title": "GET THE USA EXPORT CHECKLIST", "q": "cargo port containers night", "text": "Inside: **pick a product**, check the buyer and plan payment.", "button": "COMMENT “USA”", "note": "I'll DM you the free PDF.\nFollow so it reaches you.", "pdfPreview": "pdf_preview.png" }
+  ],
+  "caption": {
+    "body": "10 product groups America buys from India.\n\nIndia sells medicines, jewellery, textiles, seafood, chemicals, electronics, machinery, auto parts, rice, spices and handicrafts to the US. Treat this as a research list, not a promise of demand. Check the import data for your exact HS code before you pick a product.\n\nThe US has its own labelling and safety rules by product. Confirm them with your customs broker before you quote.",
+    "hashtags": ["#export", "#usa", "#importexport", "#exportbusiness", "#globaltrade"]
+  },
+  "leadmagnet": {
+    "title": "USA Export Checklist",
+    "subtitle": "Pick a product, check the buyer, plan payment",
+    "sections": [
+      { "heading": "Pick a product", "items": ["Find the HS code of your product", "Check US import data for that code", "Shortlist 1-2 product lines, not your whole catalogue", "Note the labelling and safety rules for your product"] },
+      { "heading": "Check the buyer", "items": ["Verify company registration and address", "Ask for a trade reference", "Search the company name with the word scam", "Prefer secure payment terms for first orders"] },
+      { "heading": "Before you ship", "items": ["Confirm US import rules with your customs broker", "Check export credit insurance options (ECGC)", "Agree Incoterms and payment terms in writing", "Keep copies of all documents"] }
+    ],
+    "closing": "Follow my account for more export business tips"
+  }
+}

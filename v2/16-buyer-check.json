@@ -1,0 +1,28 @@
+{
+  "family": "case",
+  "keyword": "VETTING",
+  "slides": [
+    { "type": "cover", "title": "FREE BUYER\nCHECK LIST", "sub": "Ten checks to run **before** you ship to a new buyer", "q": "handshake business meeting" },
+    { "type": "case", "label": "WHAT YOU GET INSIDE", "q": "magnifying glass documents desk", "bullets": [
+      "**Check 1:** company registration and address",
+      "**Check 2:** website, email domain and phone",
+      "**Check 3:** trade references and past suppliers",
+      "**Check 4:** search the name with the word scam",
+      "**Check 5:** safe payment terms for a first order" ] },
+    { "type": "cta", "title": "GET THE BUYER CHECK LIST", "q": "cargo port containers night", "text": "Free for followers. **One PDF**, ten checks.", "button": "COMMENT “VETTING”", "note": "I'll DM you the free PDF.\nFollow so it reaches you.", "pdfPreview": "pdf_preview.png" }
+  ],
+  "caption": {
+    "body": "Free buyer check list: ten checks before you ship.\n\nA new buyer who sounds perfect still needs checking. This list covers who they are, whether they are real, what others say about them and which payment terms protect you on a first order.\n\nIt is a practical checklist, not legal advice. For large orders, use a professional credit report.",
+    "hashtags": ["#export", "#buyercheck", "#importexport", "#exportbusiness", "#freepdf"]
+  },
+  "leadmagnet": {
+    "title": "Buyer Check List",
+    "subtitle": "Ten checks before you ship to a new buyer",
+    "sections": [
+      { "heading": "Who are they", "items": ["Company registration number and registered address", "Website age, email domain and a working phone number", "Names of the directors and their profiles", "Photos of their office or warehouse if possible"] },
+      { "heading": "What do others say", "items": ["Ask for two trade references and call them", "Search the company name with the word scam", "Search the name on trade forums and news", "Ask which suppliers they have paid before"] },
+      { "heading": "Protect yourself", "items": ["Use secure payment terms for a first order", "Put price, terms and Incoterms in writing", "For large orders, buy a credit report", "Ship in parts until trust is built"] }
+    ],
+    "closing": "Follow my account for more export business tips"
+  }
+}

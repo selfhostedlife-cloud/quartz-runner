@@ -13,6 +13,9 @@ function formatOf(p) {
   const k = String(p.keyword || '').toUpperCase();
   const t = `${p.topic || ''} ${p.hook || ''}`;
   if (p.kind === 'data' || k.endsWith('MAP')) return 'data-map';
+  // the formats that actually brought followers (2026-10 findings): a free resource offered in the post, and "top N / buys from India" lists
+  if (/\b(free|checklist|check list|pdf|costing|starter|blueprint)\b/i.test(t)) return 'free-resource';
+  if (/\b(top\s*\d+|\d+\s+(product|website|categor|export|ways|tools|portal)|ideas|buys from india|sells to|bookmark)/i.test(t)) return 'top-list';
   if (/freight|\bports?\b|congestion|container|shipping line|demurrage/i.test(t)) return 'logistics';
   if (/rule|deadline|exempt|notification|rbi|dgft|fema|rodtep|duty|circular|policy|scheme|rcmc|\bban\b|mep\b|\bopen(ed)?\b/i.test(t) || /^(FEMA|MICRO|RODTEP|WHEAT)$/.test(k)) return 'policy-rule';
   if (/pay|refus|\blc\b|advance|fraud|ghost|scam|default|dispute|claim/i.test(t)) return 'payment-risk';
@@ -35,8 +38,9 @@ export function featuresOf(p) {
     hook_question: /\?/.test(hook) ? 'yes' : 'no',
     hook_story: /refus|zero|ghost|lost|stuck|vanish|sent \d|shipped|blocked|trapped|seiz|cancel|jumped|doubled|cut\b|dropped|hidden/i.test(hook) ? 'yes' : 'no',
     hook_len: words <= 8 ? 'short' : words <= 12 ? 'medium' : 'long',
-    slides: (() => { const n = slideCount(p); return n >= 9 ? '9-10' : n >= 7 ? '7-8' : n ? '<=6' : 'unknown'; })(),
+    slides: (() => { const n = slideCount(p); return n >= 9 ? '9-10' : n >= 7 ? '7-8' : n >= 5 ? '5-6' : n ? '<=4' : 'unknown'; })(),
   };
+  const fam = readJson(path.join(p.dir || '', 'spec.json'), null)?.family; if (fam) f.family = fam; // panel / case / guide / table / cine
   if (p.kind !== 'history' && p.kind !== 'reel') f.look = p.look || (p.kind === 'reference' ? 'reference' : p.kind === 'data' ? 'data' : 'ink-gold'); // which design rotation look the post wore
   if (p.kind === 'reference') f.source = 'reference'; // posts built from a screenshot reference: does copying a proven structure beat our own ideas?
   const due = (p.buffer || []).map((e) => e.dueAt).filter(Boolean).sort()[0] || p.dueAt;
@@ -56,7 +60,7 @@ export function featuresOfHistory(row) {
   const p = { hook: lines[0] || '', topic: lines.slice(0, 2).join(' ').slice(0, 180), keyword: kw.toUpperCase(), kind: row.kind === 'reel' ? 'reel' : 'history', dir: '', buffer: [{ dueAt: row.sentAt }] };
   const f = featuresOf(p);
   if (row.kind === 'reel') return { format: f.format }; // a reel caption is not its hook, so only the topic type is learned from reels
-  const n = row.assets || 0; f.slides = n >= 9 ? '9-10' : n >= 7 ? '7-8' : n ? '<=6' : 'unknown';
+  const n = row.assets || 0; f.slides = n >= 9 ? '9-10' : n >= 7 ? '7-8' : n >= 5 ? '5-6' : n ? '<=4' : 'unknown';
   return f;
 }
 
@@ -65,11 +69,18 @@ export function views24(p, acct) { const m = p.metrics?.[acct]; return m?.h24?.v
 export function saveShare24(p, acct) { const m = p.metrics?.[acct]; const s = m?.h24 || m?.h72 || m?.d7; return s ? (s.views ? (s.saves + s.shares) / s.views : 0) : null; }
 
 // performance index: views / that account's own median carousel views (1.0 = normal for that account). Mean over accounts that have data.
+// Followers matter as much as views (owner 2026-10-29: the posts that brought followers were not the ones that topped the views table), so the index
+// blends views vs baseline (60%) with followers-per-1000-views vs the account's own median rate (40%, capped at 4x). learn.mjs sets the follow baselines.
+let FOLLOW_BASE = {};
+export function setFollowBaseline(b) { FOLLOW_BASE = b || {}; }
+export function followRate(p, acct) { const m = p.metrics?.[acct]; const s = m?.h72 || m?.h24 || m?.d7; return s && s.views >= 300 ? (s.follows || 0) / s.views * 1000 : null; } // latest snapshot: follows trickle in after 24h
 export function indexOf(p, baseline) {
   const xs = [];
   for (const acct of ['main', 'test']) {
     const v = views24(p, acct); const b = baseline?.[acct]?.views;
-    if (v != null && b) xs.push(v / b);
+    if (v == null || !b) continue;
+    const fr = followRate(p, acct), fb = FOLLOW_BASE[acct];
+    xs.push(fr != null && fb ? 0.6 * (v / b) + 0.4 * Math.min(fr / fb, 4) : v / b);
   }
   return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null;
 }

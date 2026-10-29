@@ -7,7 +7,7 @@ const ROOT = process.env.IG_ROOT || 'C:/Users/smfab/ig-automation';
 // Prints a JSON object {report} (Telegram text). Usage: node learn.mjs [--no-ai]
 import fs from 'node:fs';
 import path from 'node:path';
-import { featuresOf, featuresOfHistory, indexOf, views24, saveShare24, GOAL_VIEWS_24H } from './features.mjs';
+import { featuresOf, featuresOfHistory, indexOf, views24, saveShare24, followRate, setFollowBaseline, GOAL_VIEWS_24H } from './features.mjs';
 
 const dataDir = (ROOT + '/studio/data');
 const rd = (f, d) => { try { return JSON.parse(fs.readFileSync(path.join(dataDir, f), 'utf8')); } catch { return d; } };
@@ -27,6 +27,9 @@ const ratio6 = pairs.length >= 3 ? pairs[Math.floor(pairs.length / 2)] : null; /
 const earlyLines = [];
 
 // ---- 1. post table ----
+const fbase = {}; // median followers per 1000 views of the studio's own posts, per account (floor 0.5 so a run of zeros cannot make every follow look huge)
+for (const acct of ['main', 'test']) { const rs = state.posts.map((p) => followRate(p, acct)).filter((x) => x != null).sort((a, b) => a - b); fbase[acct] = rs.length >= 5 ? Math.max(rs[Math.floor(rs.length / 2)], 0.5) : 0; }
+setFollowBaseline(fbase);
 const table = [];
 for (const p of state.posts) {
   let idx = indexOf(p, baseline); let provisional = false;
@@ -41,7 +44,7 @@ for (const p of state.posts) {
   if (musicFlags.length) f.music = musicFlags.some((m) => m.added) ? 'added' : 'missing';
   let caption = ''; try { caption = fs.readFileSync(path.join(p.dir, 'caption.txt'), 'utf8').trim(); } catch { /* no caption */ }
   table.push({ no: p.no, provisional, topic: p.topic, hook: p.hook, keyword: p.keyword, features: f, idx: +idx.toFixed(2),
-    main24: views24(p, 'main'), test24: views24(p, 'test'), ss_main: +(saveShare24(p, 'main') ?? 0).toFixed(4), ss_test: +(saveShare24(p, 'test') ?? 0).toFixed(4), caption: caption.slice(0, 280) });
+    main24: views24(p, 'main'), test24: views24(p, 'test'), fol_main: followRate(p, 'main') == null ? null : +followRate(p, 'main').toFixed(2), fol_test: followRate(p, 'test') == null ? null : +followRate(p, 'test').toFixed(2), ss_main: +(saveShare24(p, 'main') ?? 0).toFixed(4), ss_test: +(saveShare24(p, 'test') ?? 0).toFixed(4), caption: caption.slice(0, 280) });
 }
 
 // ---- 1b. older posts (everything Buffer ever sent for either account that the studio did not make): carousels at weight 0.7, reels 0.35 ----
@@ -99,7 +102,7 @@ if (!noAi && all.length >= 3) {
   try {
     const { gemini } = await import('./agents.mjs');
     directives = await Promise.race([new Promise((_, rej) => setTimeout(() => rej(new Error('analyst timeout')), 150000)), gemini(`You are the growth analyst for two Instagram accounts (@faizanali.shahji ~22K followers, baseline carousel ~${baseline.main?.views} views; @exportimportwithfaizan ~3.5K, baseline ~${baseline.test?.views}). Indian import-export education carousels. GOAL: at least ${GOAL_VIEWS_24H} views in 24 hours on one post (about ${goal.multipleNeeded}x the main account's normal).
-"idx" = 24h views divided by that account's own baseline (1.0 = normal). Sample sizes are SMALL: never claim certainty, say what is a signal vs noise, and prefer testable next steps. Do not invent numbers; use only this data.
+"idx" = a blend of 24h views vs that account's baseline (60%) and followers per 1000 views vs its median (40%); 1.0 = normal. fol_main/fol_test = followers gained per 1000 views: FOLLOWERS ARE A CO-PRIMARY GOAL, so name the formats that earn follows, not only views. Sample sizes are SMALL: never claim certainty, say what is a signal vs noise, and prefer testable next steps. Do not invent numbers; use only this data.
 POSTS (idx high to low): ${JSON.stringify(sortedPosts.map(({ no, hook, features, idx, main24, test24, ss_main }) => ({ no, hook, format: features.format, features, idx, main24, test24, saveShareMain: ss_main })))}
 FEATURE LIFTS (n = posts INCLUDING older posts, shrunk = idx pulled toward average; older carousels count 0.7, reels 0.35): ${JSON.stringify(lifts)}
 OLDER CAROUSELS BEFORE THE STUDIO (both accounts; idx vs that account's own carousel median; lifetime views), best then worst: ${JSON.stringify([...olderCar.slice(0, 8), ...olderCar.slice(-6)].map((h) => ({ acct: h.acct, hook: h.hook, idx: h.idx, views: h.views })))}
