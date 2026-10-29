@@ -7,6 +7,8 @@ import { pathToFileURL } from 'node:url';
 import { familyHtml } from '../renderer/families.mjs';
 import { addFixedLines } from './caption.mjs';
 import { renderLeadMagnet } from './leadmagnet.mjs';
+import { fetchCommonsFile } from './commons.mjs';
+const credits = []; // photo credits of public-figure photos (Wikimedia Commons), added to the caption
 
 const ROOT = 'C:/Users/smfab/ig-automation/';
 const { chromium } = await import(pathToFileURL(ROOT + 'runner/renderer/node_modules/playwright/index.mjs').href);
@@ -23,6 +25,7 @@ const avatarFile = ROOT + 'store/studio-data/avatar.png';
 const avatar = fs.existsSync(avatarFile) ? dataUri(avatarFile) : '';
 
 async function photo(s) {
+  if (s.commonsFile) { const c = await fetchCommonsFile(s.commonsFile, CACHE); if (!credits.includes(c.credit)) credits.push(c.credit); return dataUri(c.file); } // licensed photo of a public figure
   if (!s.q && !s.imageId) return '';
   const key = s.imageId ? 'id' + s.imageId : s.q.replace(/\W+/g, '_') + '_' + (s.pick || 0);
   const f = CACHE + key + '.jpg';
@@ -68,7 +71,8 @@ await browser.close();
 // 3) caption (descriptive body + CTA line, then the two fixed lines, then 5 hashtags)
 if (spec.caption && !only) {
   const c = spec.caption;
-  const cap = `${c.body.trim()}\n\nComment ${spec.keyword} and I'll DM you the ${spec.leadmagnet?.title || 'checklist'}. Follow so the DM reaches you.\n\n${(c.hashtags || []).join(' ')}`;
+  const credit = credits.length ? `\n\n${credits.join('. ')}. Not affiliated with or endorsed by the people shown.` : '';
+  const cap = `${c.body.trim()}${credit}\n\nComment ${spec.keyword} and I'll DM you the ${spec.leadmagnet?.title || 'checklist'}. Follow so the DM reaches you.\n\n${(c.hashtags || []).join(' ')}`;
   fs.writeFileSync(path.join(outDir, 'caption.txt'), addFixedLines(cap));
   fs.writeFileSync(path.join(outDir, 'spec.json'), JSON.stringify(spec, null, 2));
 }
