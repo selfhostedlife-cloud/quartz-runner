@@ -48,9 +48,12 @@ export async function gemini(prompt, { json = true, search = false, system, imag
     const tag = (m) => m + (search ? ':search' : '') + (ki ? '#k' + (ki + 1) : '');
     if (state[tag(model)] && state[tag(model)] > Date.now()) { sawQuota = true; continue; }
     for (let a = 0; a < 3; a++) {
-      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
-        method: 'POST', headers: { 'x-goog-api-key': apiKey, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-      });
+      let r;
+      try { // a hung connection (UND_ERR_HEADERS_TIMEOUT) used to throw out of here and kill the whole concept
+        r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+          method: 'POST', headers: { 'x-goog-api-key': apiKey, 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(150000),
+        });
+      } catch (e) { console.error(`[studio] ${model}: network error ${e.cause?.code || e.name} (attempt ${a + 1})`); await sleep(4000 * (a + 1)); continue; }
       if (r.status === 404 || r.status === 400) { const t = (await r.text()).slice(0, 160); console.error(`[studio] ${model}: HTTP ${r.status} ${t}`); state[tag(model)] = Date.now() + 6 * 3600e3; saveState(state); break; }
       if (r.status === 429) {
         sawQuota = true;

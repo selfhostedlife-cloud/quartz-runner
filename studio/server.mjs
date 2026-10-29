@@ -424,7 +424,7 @@ async function onMessage(m, who = 'main') {
   }
   if (String(chat) !== String(state.chats[who])) return reply('This bot is private.');
   if (who === 'fb') return onFbMessage(text, reply);
-  if (who === 'main' && m.reply_to_message && m.reply_to_message.text?.startsWith('Rejected #')) {
+  if (who === 'main' && !text.startsWith('/') && m.reply_to_message && m.reply_to_message.text?.startsWith('Rejected #')) { // a /command sent as a reply is a command, not a rejection reason
     const no = Number(m.reply_to_message.text.match(/#(\d+)/)[1]); const p = byNo(no);
     if (p) { p.rejectReason = text; save(); const f = path.join(dataDir, 'feedback.json'); const fb = readJson(f, []); fb.push({ at: new Date().toISOString(), topic: p.topic, hook: p.hook, reason: text }); fs.writeFileSync(f, JSON.stringify(fb, null, 2)); }
     return reply('Noted. I will avoid that next time.');
@@ -546,7 +546,7 @@ async function dailyRun(count = 2, { force = false } = {}) {
       if (!opt) { await say(`Skipped concept ${no}: no hook.`); continue; }
       const sub = /comment|dm\b/i.test(opt.sub || '') ? 'Illustrative case. Here is what to check before it happens to you.' : opt.sub;
       const r = await run('make-from-concept.mjs', [String(no), '--hook', opt.hook, '--sub', sub]);
-      if (r.code !== 0) { await say(`Generation failed for concept ${no}: ${r.err.slice(-200)}`); continue; }
+      if (r.code !== 0) { const why = (r.err.split(String.fromCharCode(10)).filter((l) => /error|fail|HTTP [0-9]|quota|timeout|UND_ERR/i.test(l)).slice(-3).join(' | ') || r.err.slice(-200)).slice(0, 300); await say(`Generation failed for concept ${no}: ${why}`); continue; }
       const info = JSON.parse(r.out.trim().slice(r.out.indexOf('{')));
       const concept = concepts[no - 1];
       let lookName = 'ink-gold'; // design rotation: never one of the last 4 looks
@@ -882,6 +882,7 @@ async function ingestInbox() {
     const fp = path.join(d, f); let o = null;
     try { o = JSON.parse(fs.readFileSync(fp, 'utf8')); } catch { /* bad file */ }
     try { fs.unlinkSync(fp); } catch { /* already gone */ }
+    if (o && o.sync) { await doInsightsSync().then((r) => log('inbox sync done, updated: ' + r.updated)).catch((e) => log('inbox sync error:', e.message)); continue; }
     if (o && o.patch) { const p = state.posts.find((x) => x.id === o.patch); if (p) { Object.assign(p, o.fields || {}); save(); } continue; }
     if (o && o.resend) { const p = byNo(o.resend) || state.posts.find((x) => x.id === o.resend); if (p && p.status === 'awaiting_approval') { if (o.queued) { p.queuedResend = true; save(); } await sendPreview(p); } continue; }
     if (o && o.reject) { const old = state.posts.find((p) => p.id === o.reject); if (old && old.status === 'awaiting_approval') { old.status = 'rejected'; old.rejectReason = 'replaced by a revised version'; save(); } continue; }
