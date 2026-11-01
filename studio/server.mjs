@@ -435,7 +435,7 @@ async function onMessage(m, who = 'main') {
   if (who === 'main' && text === '/ref') return reply(REF_HELP);
   if (who === 'main' && text === '/help') return reply(HELP_MAIN);
   if (who === 'main' && /^\/edit\b/.test(text)) return onEditCommand(text, reply);
-  if (who === 'main' && /^\/fresh\b/.test(text)) { const p = byNo(text.split(/\s+/)[1]); if (p?.look === 'v2') return reply('/fresh would rebuild #' + p.no + ' and lose its slides, so it is blocked on this post. To change the hook use: /edit ' + p.no + ' 1 change the title to <your words>'); if (!p) return reply('Usage: /fresh 17 (new plain hook + new design for post #17)'); reply('Refreshing #' + p.no + ' (hook + design), about 2 minutes...'); return refreshPost(p).catch((e) => reply('Refresh failed: ' + e.message)); }
+  if (who === 'main' && /^\/fresh\b/.test(text)) { const p = byNo(text.split(/\s+/)[1]); if ((p?.look === 'v2' || /^winner-/.test(p?.look || ''))) return reply('/fresh would rebuild #' + p.no + ' and lose its slides, so it is blocked on this post. To change the hook use: /edit ' + p.no + ' 1 change the title to <your words>'); if (!p) return reply('Usage: /fresh 17 (new plain hook + new design for post #17)'); reply('Refreshing #' + p.no + ' (hook + design), about 2 minutes...'); return refreshPost(p).catch((e) => reply('Refresh failed: ' + e.message)); }
   if (who === 'main' && /^\/hook\b/.test(text)) return onHookCommand(text, reply);
   if (text === '/status') {
     const acct = who;
@@ -546,7 +546,11 @@ async function dailyRun(count = 2, { force = false } = {}) {
       const best = hs?.options?.[hs?.best_index ?? 0]; const opt = (best && plainCheck(best.hook).ok ? best : (hs?.options || []).find((o) => plainCheck(o.hook).ok)) || best || hs?.options?.[0]; // plain English first
       if (!opt) { await say(`Skipped concept ${no}: no hook.`); continue; }
       const sub = /comment|dm\b/i.test(opt.sub || '') ? 'Illustrative case. Here is what to check before it happens to you.' : opt.sub;
-      const r = await run('make-from-concept.mjs', [String(no), '--hook', opt.hook, '--sub', sub]);
+      let r = await run('make-from-concept.mjs', [String(no), '--hook', opt.hook, '--sub', sub]);
+      for (let tries = 0; r.code !== 0 && /HTTP 5[0-9][0-9]|Gemini failed on all models|UND_ERR|network error|TimeoutError/i.test(r.err) && tries < 2; tries++) { // Gemini overload (503) hits every model at once: wait and retry the whole concept instead of losing it
+        log('concept ' + no + ' hit a Gemini outage, retrying in 4 min (' + (tries + 1) + '/2)'); await new Promise((ok) => setTimeout(ok, 4 * 60e3));
+        r = await run('make-from-concept.mjs', [String(no), '--hook', opt.hook, '--sub', sub]);
+      }
       if (r.code !== 0) { const why = (r.err.split(String.fromCharCode(10)).filter((l) => /error|fail|HTTP [0-9]|quota|timeout|UND_ERR/i.test(l)).slice(-3).join(' | ') || r.err.slice(-200)).slice(0, 300); await say(`Generation failed for concept ${no}: ${why}`); continue; }
       const info = JSON.parse(r.out.trim().slice(r.out.indexOf('{')));
       const concept = concepts[no - 1];
