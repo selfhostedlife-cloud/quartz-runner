@@ -555,7 +555,9 @@ async function dailyRun(count = 2, { force = false } = {}) {
       const info = JSON.parse(r.out.trim().slice(r.out.indexOf('{')));
       const concept = concepts[no - 1];
       let lookName = 'ink-gold'; // design rotation: never one of the last 4 looks
-      if (info.template) lookName = 'winner-' + info.template; // owner's winning templates have one fixed look (black + literal photo + one accent colour)
+      if (info.template) { // 2026-11-01 owner: daily posts use the V2 design (1080x1350, big literal photos); the old winner look is the fallback if the conversion fails
+        const cv = await run('v2convert.mjs', [info.outDir], 15 * 60e3); lookName = cv.code === 0 ? 'v2' : 'winner-' + info.template; if (cv.code !== 0) log('v2 convert failed, keeping the winner look:', cv.err.slice(-200));
+      }
       else try { lookName = pickLook(state.posts); if (lookName !== 'ink-gold') { const lr = await run('looks.mjs', ['apply', info.outDir, lookName], 10 * 60e3); if (lr.code !== 0) throw new Error(lr.err.slice(-200)); } } catch (e) { log('look failed, keeping the original look:', e.message); lookName = 'ink-gold'; }
       const post = { no: ++state.seq, id: info.id, dir: info.outDir, topic: concept.title, hook: opt.hook, keyword: info.keyword, leadmagnet: path.basename(info.pdf || ''), look: lookName, status: 'awaiting_approval', createdAt: new Date().toISOString() };
       post.template = info.template || null;
