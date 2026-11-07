@@ -523,8 +523,9 @@ async function dailyRun(count = 2, { force = false } = {}) {
   if (!force) {
     if (ranToday()) return { started: false, reason: 'already ran today' };
     state.lastDailyRunDate = istDate(); save();
+    if (![1, 4].includes(istNow().getUTCDay())) { log('daily run: not a draft day (Mon/Thu only)'); return { started: false, reason: 'not a draft day' }; } // 2026-11-07 owner: drafts only twice a week (2 per run = 4 carousels/week), fewer Telegram messages
     const room = BANK_TARGET - pipelineSize();
-    if (room <= 0) { log(`daily run skipped: ${pipelineSize()} posts already waiting (cap ${BANK_TARGET})`); await say(`Daily run skipped: ${pipelineSize()} posts are already waiting for approval or a slot (cap ${BANK_TARGET}). Approve or reject those first - newer posts are written with newer learnings.`); return { started: false, reason: 'bank full' }; }
+    if (room <= 0) { log(`daily run skipped: ${pipelineSize()} posts already waiting (cap ${BANK_TARGET})`);  return { started: false, reason: 'bank full' }; }
     count = Math.min(count, room);
   }
   running = true;
