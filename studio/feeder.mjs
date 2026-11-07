@@ -53,9 +53,10 @@ async function queue() {
 // Weekly pacing (owner rule): max 10 feed posts per account per IST week (Mon-Sun), spread evenly.
 // Slot times come from the timing agent (slots.mjs -> data/slot-model.json): each ACCOUNT gets its own best hour per weekday from its own results
 // (one slot every day, a second slot on up to 3 days where the backup hour is still above normal). Fallback = the old fixed slots.
-const WEEKLY_CAP = 10;
-const FALLBACK_SLOTS = { 1: ['12:30', '19:00'], 2: ['19:00'], 3: ['12:30', '19:00'], 4: ['19:00'], 5: ['12:30', '19:00'], 6: ['19:00'], 0: ['19:00'] }; // 0 = Sunday
-function daySlotsFor(name) { const m = readJson('slot-model.json', null)?.accounts?.[name]?.slots; return m && Object.keys(m).length === 7 ? m : FALLBACK_SLOTS; }
+const WEEKLY_CAP = 4; // 2026-11-07 owner: carousels underperform, so max 4 per account per week (Mon/Wed/Fri/Sun evening); the other days are for reels
+const FALLBACK_SLOTS = { 1: ['19:00'], 2: [], 3: ['19:00'], 4: [], 5: ['19:00'], 6: [], 0: ['19:00'] }; // 0 = Sunday; 2026-11-07 carousel days only
+const CAROUSEL_DAYS = [1, 3, 5, 0];
+function daySlotsFor(name) { const m = readJson('slot-model.json', null)?.accounts?.[name]?.slots; const base = m && Object.keys(m).length === 7 ? m : FALLBACK_SLOTS; const out = {}; for (let d = 0; d < 7; d++) out[d] = CAROUSEL_DAYS.includes(d) ? (base[d] || FALLBACK_SLOTS[d]).slice(0, 1) : []; return out; } // one slot on carousel days only
 const istParts = (d) => { const t = new Date(d.getTime() + 5.5 * 3600e3); return { day: t.toISOString().slice(0, 10), dow: t.getUTCDay() }; };
 function weekKey(d) { const t = new Date(d.getTime() + 5.5 * 3600e3); const back = (t.getUTCDay() + 6) % 7; return new Date(t.getTime() - back * 864e5).toISOString().slice(0, 10); } // Monday of that IST week
 // posts already counted for a channel in a week: Buffer queue + studio state (sent ones and manually scheduled ones), de-duplicated by time
